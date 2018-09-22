@@ -54,7 +54,7 @@ namespace
     return 0 != _isatty(_fileno(stdin));
   }
 
-  bool read_from_tty(epee::wipeable_string& pass, bool hide_input)
+  bool read_from_tty(epee::wipeable_string& pass)
   {
     static constexpr const char BACKSPACE = 8;
 
@@ -62,7 +62,7 @@ namespace
 
     DWORD mode_old;
     ::GetConsoleMode(h_cin, &mode_old);
-    DWORD mode_new = mode_old & ~((hide_input ? ENABLE_ECHO_INPUT : 0) | ENABLE_LINE_INPUT);
+    DWORD mode_new = mode_old & ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT);
     ::SetConsoleMode(h_cin, mode_new);
 
     bool r = true;
@@ -107,14 +107,14 @@ namespace
     return 0 != isatty(fileno(stdin));
   }
 
-  int getch(bool hide_input) noexcept
+  int getch() noexcept
   {
     struct termios tty_old;
     tcgetattr(STDIN_FILENO, &tty_old);
 
     struct termios tty_new;
     tty_new = tty_old;
-    tty_new.c_lflag &= ~(ICANON | (hide_input ? ECHO : 0));
+    tty_new.c_lflag &= ~(ICANON | ECHO);
     tcsetattr(STDIN_FILENO, TCSANOW, &tty_new);
 
     int ch = getchar();
@@ -124,14 +124,14 @@ namespace
     return ch;
   }
 
-  bool read_from_tty(epee::wipeable_string& aPass, bool hide_input)
+  bool read_from_tty(epee::wipeable_string& aPass)
   {
     static constexpr const char BACKSPACE = 127;
 
     aPass.reserve(tools::password_container::max_password_size);
     while (aPass.size() < tools::password_container::max_password_size)
     {
-      int ch = getch(hide_input);
+      int ch = getch();
       if (EOF == ch || ch == EOT)
       {
         return false;
@@ -159,18 +159,18 @@ namespace
 
 #endif // end !WIN32
 
-  bool read_from_tty(const bool verify, const char *message, bool hide_input, epee::wipeable_string& pass1, epee::wipeable_string& pass2)
+  bool read_from_tty(const bool verify, const char *message, epee::wipeable_string& pass1, epee::wipeable_string& pass2)
   {
     while (true)
     {
       if (message)
-        std::cout << message <<": " << std::flush;
-      if (!read_from_tty(pass1, hide_input))
+        std::cout << message <<": ";
+      if (!read_from_tty(pass1))
         return false;
       if (verify)
       {
         std::cout << "Confirm password: ";
-        if (!read_from_tty(pass2, hide_input))
+        if (!read_from_tty(pass2))
           return false;
         if(pass1!=pass2)
         {
@@ -229,12 +229,12 @@ namespace tools
 
   std::atomic<bool> password_container::is_prompting(false);
 
-  boost::optional<password_container> password_container::prompt(const bool verify, const char *message, bool hide_input)
+  boost::optional<password_container> password_container::prompt(const bool verify, const char *message)
   {
     is_prompting = true;
     password_container pass1{};
     password_container pass2{};
-    if (is_cin_tty() ? read_from_tty(verify, message, hide_input, pass1.m_password, pass2.m_password) : read_from_file(pass1.m_password))
+    if (is_cin_tty() ? read_from_tty(verify, message, pass1.m_password, pass2.m_password) : read_from_file(pass1.m_password))
     {
       is_prompting = false;
       return {std::move(pass1)};

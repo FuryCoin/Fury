@@ -69,12 +69,12 @@ namespace tools
         continue;
 
       bool alnum = true;
-      for (auto c: fields[3])
+      for (auto c: hash)
         if (!isalnum(c))
           alnum = false;
-      if (fields[3].size() != 64 && !alnum)
+      if (hash.size() != 64 && !alnum)
       {
-        MWARNING("Invalid hash: " << fields[3]);
+        MWARNING("Invalid hash: " << hash);
         continue;
       }
 
