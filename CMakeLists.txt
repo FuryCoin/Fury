@@ -548,10 +548,23 @@ else()
   add_cxx_flag_if_supported(-Wformat-security CXX_SECURITY_FLAGS)
 
   # -fstack-protector
-  add_c_flag_if_supported(-fstack-protector C_SECURITY_FLAGS)
-  add_cxx_flag_if_supported(-fstack-protector CXX_SECURITY_FLAGS)
-  add_c_flag_if_supported(-fstack-protector-strong C_SECURITY_FLAGS)
-  add_cxx_flag_if_supported(-fstack-protector-strong CXX_SECURITY_FLAGS)
+  if (NOT WIN32)
+    add_c_flag_if_supported(-fstack-protector C_SECURITY_FLAGS)
+    add_cxx_flag_if_supported(-fstack-protector CXX_SECURITY_FLAGS)
+    add_c_flag_if_supported(-fstack-protector-strong C_SECURITY_FLAGS)
+    add_cxx_flag_if_supported(-fstack-protector-strong CXX_SECURITY_FLAGS)
+  endif()
+
+  # New in GCC 8.2
+  if (NOT WIN32)
+    add_c_flag_if_supported(-fcf-protection=full C_SECURITY_FLAGS)
+    add_cxx_flag_if_supported(-fcf-protection=full CXX_SECURITY_FLAGS)
+    add_c_flag_if_supported(-fstack-clash-protection C_SECURITY_FLAGS)
+    add_cxx_flag_if_supported(-fstack-clash-protection CXX_SECURITY_FLAGS)
+  endif()
+
+  add_c_flag_if_supported(-mmitigate-rop C_SECURITY_FLAGS)
+  add_cxx_flag_if_supported(-mmitigate-rop CXX_SECURITY_FLAGS)
 
   # linker
   if (NOT WIN32)
@@ -794,7 +807,7 @@ endif()
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 if(MINGW)
-  set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi)
+  set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32)
   set(ICU_LIBRARIES ${Boost_LOCALE_LIBRARY} icuio icuin icuuc icudt icutu iconv)
 elseif(APPLE OR OPENBSD OR ANDROID)
   set(EXTRA_LIBRARIES "")
