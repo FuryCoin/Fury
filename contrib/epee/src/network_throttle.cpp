@@ -1,6 +1,6 @@
 /**
 @file
-@author rfree (current maintainer in monero.cc project)
+@author rfree 
 @brief interface for throttling of connection (count and rate-limit speed etc) 
 @details <PRE>
 
@@ -26,7 +26,7 @@ Throttling work by:
 
 */
 
-// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
 // 
 // All rights reserved.
 // 

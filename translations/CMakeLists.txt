@@ -1,4 +1,4 @@
-# Copyright (c) 2017-2018, The Monero Project
+# Copyright (c) 2018 Fury Project, Derived from 2017-2018, The asdfasdf Project
 #
 # All rights reserved.
 #

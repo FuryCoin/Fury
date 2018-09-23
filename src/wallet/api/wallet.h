@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
 //
 // All rights reserved.
 //
@@ -40,7 +40,7 @@
 #include <boost/thread/condition_variable.hpp>
 
 
-namespace Monero {
+namespace Fury {
 class TransactionHistoryImpl;
 class PendingTransactionImpl;
 class UnsignedTransactionImpl;
@@ -232,7 +232,7 @@ private:
 
 } // namespace
 
-namespace Bitmonero = Monero;
+namespace Bitfury = Fury;
 
 #endif
 

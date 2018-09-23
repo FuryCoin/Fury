@@ -1,7 +1,7 @@
 #assumes you have gnu sed, osx sed might need slight syntax changeo
 #c.f. http://unix.stackexchange.com/questions/112023/how-can-i-replace-a-string-in-a-files
 
-#written by shen-noether monero research labs
+#written by shen-noether fury research labs
 
 import os #for copying and sed etc.
 import glob #for copy files
@@ -15,7 +15,7 @@ print("maybe someone smart can replace the sed with perl..")
 a = ""
 
 license = textwrap.dedent("""\
-    // Copyright (c) 2014-2018, The Monero Project
+    // Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
     // 
     // All rights reserved.
     // 
@@ -168,36 +168,36 @@ if a == "m":
     print(fe_comments)
     fe = glob.glob("fe*.c")
     for g in fe:
-        os.system("cp "+g+" "+g.replace("fe", "fe.monero."))
-    qhasmToC("fe_pow22523.c", "pow22523.h", "fe.monero._pow22523.c")
-    qhasmToC("fe_invert.c", "pow225521.h", "fe.monero._invert.c")
-    os.system("rm fe.monero._isnonzero.c") #since it's modified, it's in xmrSpecificOld
-    os.system("cat fe.monero.*.c | grep -v '^#include' > fe.monero.c")
+        os.system("cp "+g+" "+g.replace("fe", "fe.fury."))
+    qhasmToC("fe_pow22523.c", "pow22523.h", "fe.fury._pow22523.c")
+    qhasmToC("fe_invert.c", "pow225521.h", "fe.fury._invert.c")
+    os.system("rm fe.fury._isnonzero.c") #since it's modified, it's in xmrSpecificOld
+    os.system("cat fe.fury.*.c | grep -v '^#include' > fe.fury.c")
 
     #sc things
     print("\nmaking sc.c")
     print(sc_comments)
     #so you don't get multiple "loads"
-    os.system("tail -n +24 sc_reduce.c > sc.monero._reduce.c") #also good on linux
-    os.system("tail -n +24 sc_muladd.c > sc.monero._muladd.c")
-    os.system("tail -n +31 sc_sub.xmr.c > sc.monero._sub.xmr.c") #careful with the tails if you change these files!
-    os.system("cat sc.monero.*.c | grep -v '^#include' > sc.monero.c")
+    os.system("tail -n +24 sc_reduce.c > sc.fury._reduce.c") #also good on linux
+    os.system("tail -n +24 sc_muladd.c > sc.fury._muladd.c")
+    os.system("tail -n +31 sc_sub.xmr.c > sc.fury._sub.xmr.c") #careful with the tails if you change these files!
+    os.system("cat sc.fury.*.c | grep -v '^#include' > sc.fury.c")
 
     #ge stuff
     print("making ge.c")
     ge = glob.glob("ge*.c")
     for g in ge:
-        os.system("cp "+g+" "+g.replace("ge", "ge.monero."))
+        os.system("cp "+g+" "+g.replace("ge", "ge.fury."))
     print(ge_comments)
     #need to substitute the below lines for their .h files in the appropriate places
-    qhasmToC("ge_add.c", "ge_add.h", "ge.monero._add.c")
-    qhasmToC("ge_madd.c", "ge_madd.h", "ge.monero._madd.c")
-    qhasmToC("ge_sub.c", "ge_sub.h", "ge.monero._sub.c")
-    qhasmToC("ge_msub.c", "ge_msub.h", "ge.monero._msub.c")
-    qhasmToC("ge_p2_dbl.c", "ge_p2_dbl.h", "ge.monero._p2_dbl.c")
-    qhasmToC("ge_frombytes.c", "d.h", "ge.monero._frombytes.c")
-    qhasmToC("ge.monero._frombytes.c", "sqrtm1.h", "ge.monero._frombytes.c")
-    qhasmToC("ge_p3_to_cached.c", "d2.h", "ge.monero._p3_to_cached.c")
+    qhasmToC("ge_add.c", "ge_add.h", "ge.fury._add.c")
+    qhasmToC("ge_madd.c", "ge_madd.h", "ge.fury._madd.c")
+    qhasmToC("ge_sub.c", "ge_sub.h", "ge.fury._sub.c")
+    qhasmToC("ge_msub.c", "ge_msub.h", "ge.fury._msub.c")
+    qhasmToC("ge_p2_dbl.c", "ge_p2_dbl.h", "ge.fury._p2_dbl.c")
+    qhasmToC("ge_frombytes.c", "d.h", "ge.fury._frombytes.c")
+    qhasmToC("ge.fury._frombytes.c", "sqrtm1.h", "ge.fury._frombytes.c")
+    qhasmToC("ge_p3_to_cached.c", "d2.h", "ge.fury._p3_to_cached.c")
 
 
 
@@ -205,11 +205,11 @@ if a == "m":
     #note, base2.h is a large file!
     #also in ge_scalarmult_base ge_precomp base needs base.h included
 
-    qhasmToC("ge_double_scalarmult.c", "base2.h", "ge.monero._double_scalarmult.c")
-    qhasmToC("ge_scalarmult_base.c", "base.h", "ge.monero._scalarmult_base.c")
-    #qhasmToC("ge.monero._scalarmult_base.c", "base.h", "ge.monero._scalarmult_base.c")
-    os.system("sed -i 's/ cmov/ ge_precomp_cmov/g' ge.monero._scalarmult_base.c")
-    os.system("cat ge.monero.*.c | grep -v '^#include' > ge.monero.c")
+    qhasmToC("ge_double_scalarmult.c", "base2.h", "ge.fury._double_scalarmult.c")
+    qhasmToC("ge_scalarmult_base.c", "base.h", "ge.fury._scalarmult_base.c")
+    #qhasmToC("ge.fury._scalarmult_base.c", "base.h", "ge.fury._scalarmult_base.c")
+    os.system("sed -i 's/ cmov/ ge_precomp_cmov/g' ge.fury._scalarmult_base.c")
+    os.system("cat ge.fury.*.c | grep -v '^#include' > ge.fury.c")
 
 
     print("making crypto-ops.c")
@@ -217,30 +217,30 @@ if a == "m":
     #sqrtm1 things
 
     #comments
-    with open("fe.monero.comments", "w") as text_file:
+    with open("fe.fury.comments", "w") as text_file:
             text_file.write(fe_comments)
-    with open("ge.monero.comments", "w") as text_file:
+    with open("ge.fury.comments", "w") as text_file:
             text_file.write(ge_comments)
-    with open("sc.monero.comments", "w") as text_file:
+    with open("sc.fury.comments", "w") as text_file:
             text_file.write(sc_comments)
-    with open("xmr.monero.comments", "w") as text_file:
+    with open("xmr.fury.comments", "w") as text_file:
             text_file.write(xmr_comments)
-    with open("xmr.monero.predeclarations", "w") as text_file:
+    with open("xmr.fury.predeclarations", "w") as text_file:
             text_file.write(predeclarations)
 
 
     #license
-    with open("monero.license", "w") as text_file:
+    with open("fury.license", "w") as text_file:
             text_file.write(license)
 
     #crypto-ops.c includes
-    with open("crypto-ops.monero.includes", "w") as text_file:
+    with open("crypto-ops.fury.includes", "w") as text_file:
         text_file.write(crypto_ops_includes)
 
     #note you may have duplicates of load_3, load_4 and possibly some other functions ... 
-    os.system("cat monero.license crypto-ops.monero.includes xmr.monero.predeclarations fe.monero.comments fe.monero.c sc.monero.comments sc.monero.c ge.monero.comments ge.monero.c xmr.monero.comments xmrSpecificOld.c > crypto-ops.c")
+    os.system("cat fury.license crypto-ops.fury.includes xmr.fury.predeclarations fe.fury.comments fe.fury.c sc.fury.comments sc.fury.c ge.fury.comments ge.fury.c xmr.fury.comments xmrSpecificOld.c > crypto-ops.c")
 
-    #monero specific header files
+    #fury specific header files
     #print("making crypto-ops-tmp.h")
     #os.system("cat fe.h ge.h sc.h |grep -v crypto_sign_ed25519 |grep -v fe.h > crypto-ops-tmp.h")
     #we'll just use the old header crypto-ops.h
@@ -252,10 +252,10 @@ if a == "m":
     os.system("sed -i 's/crypto_uint64/uint64_t/g' crypto-ops.c")
 
     #cleaning up 
-    os.system("rm *monero*")
+    os.system("rm *fury*")
 
-    #monero specific c files
+    #fury specific c files
 if a == "c":
     #turn the directory back into ref10
-    os.system("rm *monero*")
+    os.system("rm *fury*")
     os.system("rm crypto-ops.c")

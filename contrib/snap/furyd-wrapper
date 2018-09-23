@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ ! -d "$SNAP_USER_DATA/etc" ]; then
+  mkdir $SNAP_USER_DATA/etc/
+  cp -R $SNAP/etc/furyd.conf $SNAP_USER_DATA/etc/furyd.conf
+fi
+
+exec "$SNAP/bin/furyd" "$@"

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
 // 
 // All rights reserved.
 // 
@@ -59,8 +59,8 @@
 #include "common/password.h"
 #include "node_rpc_proxy.h"
 
-#undef MONERO_DEFAULT_LOG_CATEGORY
-#define MONERO_DEFAULT_LOG_CATEGORY "wallet.wallet2"
+#undef FURY_DEFAULT_LOG_CATEGORY
+#define FURY_DEFAULT_LOG_CATEGORY "wallet.wallet2"
 
 class Serialization_portability_wallet_Test;
 

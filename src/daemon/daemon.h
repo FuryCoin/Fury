@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
 // 
 // All rights reserved.
 // 
@@ -29,8 +29,8 @@
 #pragma once
 #include <boost/program_options.hpp>
 
-#undef MONERO_DEFAULT_LOG_CATEGORY
-#define MONERO_DEFAULT_LOG_CATEGORY "daemon"
+#undef FURY_DEFAULT_LOG_CATEGORY
+#define FURY_DEFAULT_LOG_CATEGORY "daemon"
 
 namespace daemonize {
 

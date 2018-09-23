@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2018, The Monero Project
+// Copyright (c) 2018 Fury Project, Derived from 2017-2018, The asdfasdf Project
 // 
 // All rights reserved.
 // 
@@ -36,8 +36,8 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/uuid/uuid.hpp>
 
-#undef MONERO_DEFAULT_LOG_CATEGORY
-#define MONERO_DEFAULT_LOG_CATEGORY "cn.block_queue"
+#undef FURY_DEFAULT_LOG_CATEGORY
+#define FURY_DEFAULT_LOG_CATEGORY "cn.block_queue"
 
 namespace cryptonote
 {

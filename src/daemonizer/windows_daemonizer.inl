@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018, The Monero Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
 // 
 // All rights reserved.
 // 
@@ -175,7 +175,7 @@ namespace daemonizer
     }
     else // interactive
     {
-      //LOG_PRINT_L0("Monero '" << MONERO_RELEASE_NAME << "' (v" << MONERO_VERSION_FULL);
+      //LOG_PRINT_L0("Fury '" << FURY_RELEASE_NAME << "' (v" << FURY_VERSION_FULL);
       return executor.run_interactive(vm);
     }
 

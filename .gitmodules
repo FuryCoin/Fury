@@ -1,11 +1,11 @@
 [submodule "external/unbound"]
 	path = external/unbound
-	url = https://github.com/monero-project/unbound
-	branch = monero
+	url = https://github.com/fury-project/unbound
+	branch = fury
 [submodule "external/miniupnp"]
 	path = external/miniupnp
-	url = https://github.com/monero-project/miniupnp
-	branch = monero
+	url = https://github.com/fury-project/miniupnp
+	branch = fury
 [submodule "external/rapidjson"]
 	path = external/rapidjson
 	url = https://github.com/Tencent/rapidjson

@@ -1,4 +1,4 @@
-# Copyright (c) 2016-2018, The Monero Project
+# Copyright (c) 2018 Fury Project, Derived from 2016-2018, The asdfasdf Project
 #
 # All rights reserved.
 #
@@ -34,9 +34,9 @@ set(serialization_headers)
 set(serialization_private_headers
   json_object.h)
 
-monero_private_headers(serialization
+fury_private_headers(serialization
   ${serialization_private_headers})
-monero_add_library(serialization
+fury_add_library(serialization
   ${serialization_sources}
   ${serialization_headers}
   ${serialization_private_headers})
