@@ -1,8 +1,8 @@
 /// @file
-/// @author rfree 
+/// @author rfree (current maintainer in fury.cc project)
 /// @brief This is the place to implement our handlers for protocol network actions, e.g. for ratelimit for download-requests
 
-// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 // 
 // All rights reserved.
 // 

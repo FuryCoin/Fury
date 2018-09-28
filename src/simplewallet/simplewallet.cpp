@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -86,9 +86,9 @@ typedef cryptonote::simple_wallet sw;
 
 #define EXTENDED_LOGS_FILE "wallet_details.log"
 
-#define DEFAULT_MIX 6
+#define DEFAULT_MIX 1
 
-#define MIN_RING_SIZE 7 // Used to inform user about min ring size -- does not track actual protocol
+#define MIN_RING_SIZE 2 // Used to inform user about min ring size -- does not track actual protocol
 
 #define OUTPUT_EXPORT_FILE_MAGIC "Fury output export\003"
 
@@ -1646,6 +1646,11 @@ bool simple_wallet::set_default_ring_size(const std::vector<std::string> &args/*
       fail_msg_writer() << tr("ring size must be an integer >= ") << MIN_RING_SIZE;
       return true;
     }
+
+if(ring_size > MAXIMUM_MIXIN + 1){
+          fail_msg_writer() << tr("Maximum ring size is 11");
+          return true;
+        }
  
     if (ring_size != 0 && ring_size != DEFAULT_MIX+1)
       message_writer() << tr("WARNING: this is a non default ring size, which may harm your privacy. Default is recommended.");
@@ -4368,8 +4373,14 @@ bool simple_wallet::transfer_main(int transfer_type, const std::vector<std::stri
     }
     else
     {
-      fake_outs_count = ring_size - 1;
-      local_args.erase(local_args.begin());
+      if(ring_size > MAXIMUM_MIXIN + 1){
+                return false;
+              }
+              else
+              {
+                fake_outs_count = ring_size - 1;
+                local_args.erase(local_args.begin());
+              }
     }
   }
   uint64_t adjusted_fake_outs_count = m_wallet->adjust_mixin(fake_outs_count);
@@ -4880,8 +4891,14 @@ bool simple_wallet::sweep_main(uint64_t below, const std::vector<std::string> &a
     }
     else
     {
-      fake_outs_count = ring_size - 1;
-      local_args.erase(local_args.begin());
+     if(ring_size > MAXIMUM_MIXIN + 1){
+                return false;
+              }
+              else
+              {
+                fake_outs_count = ring_size - 1;
+                local_args.erase(local_args.begin());
+              }
     }
   }
   uint64_t adjusted_fake_outs_count = m_wallet->adjust_mixin(fake_outs_count);
@@ -5093,8 +5110,14 @@ bool simple_wallet::sweep_single(const std::vector<std::string> &args_)
     }
     else
     {
-      fake_outs_count = ring_size - 1;
-      local_args.erase(local_args.begin());
+      if(ring_size > MAXIMUM_MIXIN + 1){
+                return false;
+              }
+              else
+              {
+                fake_outs_count = ring_size - 1;
+                local_args.erase(local_args.begin());
+              }
     }
   }
 

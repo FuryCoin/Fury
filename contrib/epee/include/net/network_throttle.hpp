@@ -1,8 +1,8 @@
 /// @file
-/// @author rfree 
+/// @author rfree
 /// @brief interface for throttling of connection (count and rate-limit speed etc)
 
-// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 // 
 // All rights reserved.
 // 

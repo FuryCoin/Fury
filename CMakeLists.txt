@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+# Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 #
 # All rights reserved.
 #
@@ -137,9 +137,24 @@ endif()
 
 if(ARCH_ID STREQUAL "ppc64le")
   set(PPC64LE 1)
+  set(PPC64   0)
+  set(PPC     0)
+
 endif()
 
-if(WIN32 OR ARM)
+if(ARCH_ID STREQUAL "powerpc64" OR ARCH_ID STREQUAL "ppc64")
+  set(PPC64LE 0)
+  set(PPC64   1)
+  set(PPC     0)
+endif()
+
+if(ARCH_ID STREQUAL "powerpc")
+  set(PPC64LE 0)
+  set(PPC64   0)
+  set(PPC     1)
+endif()
+
+if(WIN32 OR ARM OR PPC64LE OR PPC64 OR PPC)
   set(OPT_FLAGS_RELEASE "-O2")
 else()
   set(OPT_FLAGS_RELEASE "-Ofast")
@@ -157,7 +172,7 @@ set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 
 # set this to 0 if per-block checkpoint needs to be disabled
-set(PER_BLOCK_CHECKPOINT 1)
+set(PER_BLOCK_CHECKPOINT 0)
 
 if(PER_BLOCK_CHECKPOINT)
   add_definitions("-DPER_BLOCK_CHECKPOINT")
@@ -477,7 +492,11 @@ else()
   if(ARCH STREQUAL "default")
     set(ARCH_FLAG "")
   elseif(PPC64LE)
-    set(ARCH_FLAG "-mcpu=${ARCH}")
+    set(ARCH_FLAG "-mcpu=power8")
+  elseif(PPC64)
+    set(ARCH_FLAG "-mcpu=970")
+  elseif(PPC)
+    set(ARCH_FLAG "-mcpu=7400")
   elseif(IOS AND ARCH STREQUAL "arm64")
     message(STATUS "IOS: Changing arch from arm64 to armv8")
     set(ARCH_FLAG "-march=armv8")
@@ -600,12 +619,12 @@ else()
     message(STATUS "AES support explicitly disabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNO_AES")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNO_AES")
-  elseif(NOT ARM AND NOT PPC64LE)
+  elseif(NOT ARM AND NOT PPC64LE AND NOT PPC64 AND NOT PPC)
     message(STATUS "AES support enabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -maes")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -maes")
-  elseif(PPC64LE)
-    message(STATUS "AES support not available on ppc64le")
+  elseif(PPC64LE OR PPC64 OR PPC)
+    message(STATUS "AES support not available on POWER")
   elseif(ARM6)
     message(STATUS "AES support not available on ARMv6")
   elseif(ARM7)
@@ -807,6 +826,7 @@ endif()
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 if(MINGW)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wa,-mbig-obj")
   set(EXTRA_LIBRARIES mswsock;ws2_32;iphlpapi;crypt32)
   set(ICU_LIBRARIES ${Boost_LOCALE_LIBRARY} icuio icuin icuuc icudt icutu iconv)
 elseif(APPLE OR OPENBSD OR ANDROID)

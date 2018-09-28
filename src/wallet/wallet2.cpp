@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -646,14 +646,14 @@ wallet2::wallet2(network_type nettype, bool restricted):
   m_always_confirm_transfers(true),
   m_print_ring_members(false),
   m_store_tx_info(true),
-  m_default_mixin(0),
+  m_default_mixin(DEFAULT_MIXIN),
   m_default_priority(0),
   m_refresh_type(RefreshOptimizeCoinbase),
   m_auto_refresh(true),
   m_refresh_from_block_height(0),
   m_explicit_refresh_from_block_height(true),
-  m_confirm_missing_payment_id(true),
-  m_confirm_non_default_ring_size(true),
+  m_confirm_missing_payment_id(false),
+  m_confirm_non_default_ring_size(false),
   m_ask_password(true),
   m_min_output_count(0),
   m_min_output_value(0),
@@ -5344,18 +5344,6 @@ int wallet2::get_fee_algorithm() const
 //------------------------------------------------------------------------------------------------------------------------------
 uint64_t wallet2::adjust_mixin(uint64_t mixin) const
 {
-  if (mixin < 6 && use_fork_rules(7, 10)) {
-    MWARNING("Requested ring size " << (mixin + 1) << " too low for hard fork 7, using 7");
-    mixin = 6;
-  }
-  else if (mixin < 4 && use_fork_rules(6, 10)) {
-    MWARNING("Requested ring size " << (mixin + 1) << " too low for hard fork 6, using 5");
-    mixin = 4;
-  }
-  else if (mixin < 2 && use_fork_rules(2, 10)) {
-    MWARNING("Requested ring size " << (mixin + 1) << " too low for hard fork 2, using 3");
-    mixin = 2;
-  }
   return mixin;
 }
 //----------------------------------------------------------------------------------------------------

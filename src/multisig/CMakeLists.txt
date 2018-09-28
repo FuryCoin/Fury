@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Fury Project, Derived from 2017-2018, The asdfasdf Project
+# Copyright (c) 2017-2018, The Fury Project
 #
 # All rights reserved.
 #

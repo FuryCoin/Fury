@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 //
 // All rights reserved.
 //
@@ -127,7 +127,8 @@ namespace nodetool
     virtual std::map<std::string, time_t> get_blocked_hosts() { CRITICAL_REGION_LOCAL(m_blocked_hosts_lock); return m_blocked_hosts; }
   private:
     const std::vector<std::string> m_seed_nodes_list =
-    { "209.141.53.169:18080"
+    { "209.141.53.169:18080",
+      "209.97.179.111:18080"
     };
 
     bool islimitup=false;

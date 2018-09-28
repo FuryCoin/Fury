@@ -1,8 +1,8 @@
 /// @file
-/// @author rfree 
+/// @author rfree
 /// @brief base for connection, contains e.g. the ratelimit hooks
 
-// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 // 
 // All rights reserved.
 // 

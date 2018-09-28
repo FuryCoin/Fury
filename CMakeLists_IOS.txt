@@ -1,4 +1,4 @@
-# Portions Copyright (c) 2018 Fury Project, Derived from 2017-2018, The asdfasdf Project
+# Portions Copyright (c) 2017-2018, The Fury Project
 # This file is based off of the https://code.google.com/archive/p/ios-cmake/
 # It has been altered for Fury iOS development
 #

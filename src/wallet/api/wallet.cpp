@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 //
 // All rights reserved.
 //
@@ -1146,6 +1146,15 @@ PendingTransaction *WalletImpl::createTransaction(const string &dst_addr, const 
     PendingTransactionImpl * transaction = new PendingTransactionImpl(*this);
 
     do {
+// limit the max mixin
+if (fake_outs_count > MAXIMUM_MIXIN)
+        {
+           size_t maximum_ringsize = MAXIMUM_MIXIN + 1;
+           m_status = Status_Error;
+           m_errorString = tr("The ring size is too high, the maximum ring size is " + maximum_ringsize);
+           break;
+        }
+
         if(!cryptonote::get_account_address_from_str(info, m_wallet->nettype(), dst_addr)) {
             // TODO: copy-paste 'if treating as an address fails, try as url' from simplewallet.cpp:1982
             m_status = Status_Error;

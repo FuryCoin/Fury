@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -799,6 +799,15 @@ namespace tools
       {
         mixin = m_wallet->adjust_mixin(req.mixin);
       }
+
+// limit the maximum mixin
+      if (mixin > MAXIMUM_MIXIN)
+      {
+      er.code = WALLET_RPC_ERROR_CODE_TX_NOT_POSSIBLE;
+      er.message = "The ring size is too high, The ring size is too high, the maximum ring size is 11";
+      return false;
+      }
+
       uint32_t priority = m_wallet->adjust_priority(req.priority);
       std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, extra, req.account_index, req.subaddr_indices, m_trusted_daemon);
 
@@ -859,6 +868,15 @@ namespace tools
       {
         mixin = m_wallet->adjust_mixin(req.mixin);
       }
+
+// limit the maximum mixin
+      if (mixin > MAXIMUM_MIXIN)
+      {
+      er.code = WALLET_RPC_ERROR_CODE_TX_NOT_POSSIBLE;
+      er.message = "The ring size is too high, The ring size is too high, the maximum ring size is 11";
+      return false;
+      }
+
       uint32_t priority = m_wallet->adjust_priority(req.priority);
       LOG_PRINT_L2("on_transfer_split calling create_transactions_2");
       std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, extra, req.account_index, req.subaddr_indices, m_trusted_daemon);
@@ -934,6 +952,15 @@ namespace tools
       {
         mixin = m_wallet->adjust_mixin(req.mixin);
       }
+
+// limit the maximum mixin
+      if (mixin > MAXIMUM_MIXIN)
+      {
+      er.code = WALLET_RPC_ERROR_CODE_TX_NOT_POSSIBLE;
+      er.message = "The ring size is too high, The ring size is too high, the maximum ring size is 11";
+      return false;
+      }
+
       uint32_t priority = m_wallet->adjust_priority(req.priority);
       std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_all(req.below_amount, dsts[0].addr, dsts[0].is_subaddress, mixin, req.unlock_time, priority, extra, req.account_index, req.subaddr_indices, m_trusted_daemon);
 
@@ -990,6 +1017,15 @@ namespace tools
       {
         mixin = m_wallet->adjust_mixin(req.mixin);
       }
+
+// limit the maximum mixin
+      if (mixin > MAXIMUM_MIXIN)
+      {
+      er.code = WALLET_RPC_ERROR_CODE_TX_NOT_POSSIBLE;
+      er.message = "The ring size is too high, The ring size is too high, the maximum ring size is 11";
+      return false;
+      }
+
       uint32_t priority = m_wallet->adjust_priority(req.priority);
       std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_single(ki, dsts[0].addr, dsts[0].is_subaddress, mixin, req.unlock_time, priority, extra, m_trusted_daemon);
 

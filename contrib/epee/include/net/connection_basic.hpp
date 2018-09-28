@@ -1,5 +1,5 @@
 /// @file
-/// @author rfree 
+/// @author rfree
 /// @brief base for connection, contains e.g. the ratelimit hooks
 
 // ! This file might contain variable names same as in template class connection<> 
@@ -8,7 +8,7 @@
 // ! (how ever if in some wonderful juristdictions that is not the case, then why not make another sub-class withat that members and licence it as epee part)
 // ! Working on above premise, IF this is valid in your juristdictions, then consider this code as released as:
 
-// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The asdfasdf Project
+// Copyright (c) 2018 Fury Project, Derived from 2014-2018, The Monero Project
 // 
 // All rights reserved.
 // 
