@@ -25,7 +25,7 @@ Fury is a cryptocurrency built on Monero v7 with the aim to become and standard 
 
 -    Algorithm: Cryptonight v7
 
--    Reward: ~100,000 FURY at inception
+-    Reward: ~1,500 FURY at inception
 
 -    Emission structure: logarithmic until max supply is reached in 2020. For more information: https://www.Fury.org
 
@@ -41,9 +41,8 @@ If you want to help out, see [CONTRIBUTING](CONTRIBUTING.md) for a set of guidel
 
 | Software upgrade block height | Date       | Fork version | Details                                                                            |  
 | ------------------------------ | -----------| ----------------- | ---------------------------------------------------------------------------------- |
-| 0                       | 22-07-2018 | v1                 |  Genesis block       |
-| 1                       | 22-07-2018 | v7                 |  Start of the blockchain       |
-| 95000                   | 01-10-2018 | v8                 | Adding public transactions (transactions with mixin 0)       |
+| 0                       | 28-09-2018 | v1                 |  Genesis block       |
+| 1                       | 28-09-2018 | v7                 |  Start of the blockchain       |
 
 Note future releases block heights and dates may change, so make sure to frequently check github, our website, the forums, etc. for the most up to date information.
 
@@ -87,7 +86,7 @@ build the library binary manually. This can be done with the following command `
 
 ### Cloning the repository
 
-`$ git clone https://github.com/Fury-official/Fury`
+`$ git clone https://github.com/FuryCoin/Fury`
 
 ### Build instructions
 
