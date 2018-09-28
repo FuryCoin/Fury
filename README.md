@@ -19,13 +19,13 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
 
 Fury is a cryptocurrency built on Monero v7 with the aim to become and standard in digital payment and transaction settlement. We believe privacy is very important when it comes to managing personal finances, but at the same time banks and institutions need to know the source of the funds for KYC purposes. Therefore, we plan on leaving the users the choice of whether or not they want their transaction to be public. Because we are implementing a worldwide network of dedicated servers, we hope to make the synchronization of the blockchain faster than other cryptocurrencies as well as reducing transaction latency. We believe this network will be a key component in the deployment of the future improvements we plan on adding to the core code. The main characteristics of Fury are detailed below:
 
--    Total Supply: 100,000,000,000
+-    Total Supply: 1,000,000,000
 
--    Block Time: 1 minute
+-    Block Time: 2 minute
 
 -    Algorithm: Cryptonight v7
 
--    Reward: ~100,000 XCA at inception
+-    Reward: ~1,500 FURY at inception
 
 -    Emission structure: logarithmic until max supply is reached in 2020. For more information: https://www.Fury.org
 
@@ -41,9 +41,8 @@ If you want to help out, see [CONTRIBUTING](CONTRIBUTING.md) for a set of guidel
 
 | Software upgrade block height | Date       | Fork version | Details                                                                            |  
 | ------------------------------ | -----------| ----------------- | ---------------------------------------------------------------------------------- |
-| 0                       | 22-07-2018 | v1                 |  Genesis block       |
-| 1                       | 22-07-2018 | v7                 |  Start of the blockchain       |
-| 95000                   | 01-10-2018 | v8                 | Adding public transactions (transactions with mixin 0)       |
+| 0                       | 28-09-2018 | v1                 |  Genesis block       |
+| 1                       | 28-09-2018 | v7                 |  Start of the blockchain       |
 
 Note future releases block heights and dates may change, so make sure to frequently check github, our website, the forums, etc. for the most up to date information.
 
@@ -87,7 +86,7 @@ build the library binary manually. This can be done with the following command `
 
 ### Cloning the repository
 
-`$ git clone https://github.com/Fury-official/Fury`
+`$ git clone https://github.com/FuryCoin/Fury`
 
 ### Build instructions
 
