@@ -504,8 +504,7 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
   }
 
   if (num_valid_records < 2)
-  {
-    LOG_PRINT_L0("WARNING: no two valid FuryPulse DNS checkpoint records were received");
+  {    
     return false;
   }
 
@@ -527,8 +526,7 @@ bool load_txt_records_from_dns(std::vector<std::string> &good_records, const std
 
   if (good_records_index < 0)
   {
-    LOG_PRINT_L0("WARNING: no two FuryPulse DNS checkpoint records matched");
-    return false;
+      return false;
   }
 
   good_records = records[good_records_index];
