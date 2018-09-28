@@ -170,6 +170,7 @@ bool checkpoints::init_default_checkpoints(network_type nettype)
       return true;
     }
   ADD_CHECKPOINT(1,   "e0c07ed9234fee40f08946b2fb830a01ded182464becd974b708764a776958bd");
+  ADD_CHECKPOINT(100,   "be2ff14470066999127e70792bf1cae83ddcecfb95577eb34bee6a6cd70df0fe");
     return true;
 }
 
