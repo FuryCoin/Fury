@@ -381,9 +381,9 @@ namespace nodetool
     }
     else
     {
-      full_addrs.insert("209.141.53.169:18280");
-      full_addrs.insert("138.197.173.144:18080");
-      full_addrs.insert("198.98.57.110:18080");
+      full_addrs.insert("142.93.35.55:18080");
+      full_addrs.insert("139.59.16.118:18080");
+      full_addrs.insert("68.183.24.239:18080");
     }
     return full_addrs;
   }
