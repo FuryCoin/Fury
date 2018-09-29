@@ -17,7 +17,7 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
 
 ## Introduction
 
-Fury is a cryptocurrency built on Monero v7 with the aim to become and standard in digital payment and transaction settlement. We believe privacy is very important when it comes to managing personal finances, but at the same time banks and institutions need to know the source of the funds for KYC purposes. Therefore, we plan on leaving the users the choice of whether or not they want their transaction to be public. Because we are implementing a worldwide network of dedicated servers, we hope to make the synchronization of the blockchain faster than other cryptocurrencies as well as reducing transaction latency. We believe this network will be a key component in the deployment of the future improvements we plan on adding to the core code. The main characteristics of Fury are detailed below:
+Fury is a cryptocurrency built on Monero v7 with the aim to become one of a few standard currencies for digital payments.  The main characteristics of Fury are detailed below:
 
 -    Total Supply: 1,000,000,000
 
@@ -27,15 +27,11 @@ Fury is a cryptocurrency built on Monero v7 with the aim to become and standard 
 
 -    Reward: ~1,500 FURY at inception
 
--    Emission structure: logarithmic until max supply is reached in 2020. For more information: https://www.Fury.org
+-    Emission structure: logarithmic until max supply is reached in 2020. For more information: TBA
 
 ## License
 
 See [LICENSE](LICENSE).
-
-## Contributing
-
-If you want to help out, see [CONTRIBUTING](CONTRIBUTING.md) for a set of guidelines.
 
 ## Scheduled software upgrades
 
@@ -84,9 +80,12 @@ library archives (`.a`).
 [^] On Debian/Ubuntu `libgtest-dev` only includes sources and headers. You must
 build the library binary manually. This can be done with the following command ```sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake . && sudo make && sudo mv libg* /usr/lib/ ```
 
+Debian / Ubuntu one liner for all dependencies
+sudo apt update && sudo apt install build-essential cmake pkg-config libboost-all-dev libssl-dev libzmq3-dev libunbound-dev libsodium-dev libunwind8-dev liblzma-dev libreadline6-dev libldns-dev libexpat1-dev doxygen graphviz libpcsclite-dev libpgm-dev
+
 ### Cloning the repository
 
-`$ git clone https://github.com/FuryCoin/Fury`
+`$ git clone https://github.com/FuryCoin/Fury
 
 ### Build instructions
 
@@ -151,9 +150,11 @@ application.
 
         pacman -Syuu  
 
-* Exit the MSYS shell using Alt+F4  
-* Edit the properties for the `MSYS2 Shell` shortcut changing "msys2_shell.bat" to "msys2_shell.cmd -mingw64" for 64-bit builds or "msys2_shell.cmd -mingw32" for 32-bit builds
-* Restart MSYS shell via modified shortcut and update packages again using pacman:  
+* Exit the MSYS shell using Alt+F4
+* Open the MingW shell via `MinGW-w64-Win64 Shell` shortcut on 64-bit Windows
+  or `MinGW-w64-Win64 Shell` shortcut on 32-bit Windows. Note that if you are
+  running 64-bit Windows, you will have both 64-bit and 32-bit MinGW shells.
+* Update packages again using pacman:  
 
         pacman -Syuu  
 
@@ -167,10 +168,6 @@ application.
     To build for 32-bit Windows:
  
         pacman -S mingw-w64-i686-toolchain make mingw-w64-i686-cmake mingw-w64-i686-boost mingw-w64-i686-openssl mingw-w64-i686-zeromq mingw-w64-i686-libsodium
-
-* Open the MingW shell via `MinGW-w64-Win64 Shell` shortcut on 64-bit Windows
-  or `MinGW-w64-Win64 Shell` shortcut on 32-bit Windows. Note that if you are
-  running 64-bit Windows, you will have both 64-bit and 32-bit MinGW shells.
 
 **Building**
 
