@@ -5,12 +5,12 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
 
 ## Development resources
 
-- Web: TBA
-- Explorer: TBA
-- Official Mining Pool: TBA
-- Bitcointalk: TBA
+- Web: [Fury Website](https://fury-coin.com/)
+- Explorer: [Fury Explorer](http://69.55.49.102:8081/)
+- Official Mining Pool: [Fury Pool](https://fury.xmining.pro/)
+- Bitcointalk: [Fury ANN](https://bitcointalk.org/index.php?topic=5043980.0) 
 - Reddit: TBA
-- Twitter: TBA
+- Twitter: [Fury Twitter](https://twitter.com/FuryCoin) 
 - Telegram: TBA
 - Discord: [Fury Discord](https://discord.gg/bA6YHZC) 
 - GitHub: [https://github.com/FuryCoin/Fury](https://github.com/FuryCoin/Fury)
