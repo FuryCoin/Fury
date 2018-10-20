@@ -85,7 +85,7 @@ sudo apt update && sudo apt install build-essential cmake pkg-config libboost-al
 
 ### Cloning the repository
 
-`$ git clone https://github.com/FuryCoin/Fury
+$ git clone https://github.com/FuryCoin/Fury
 
 ### Build instructions
 
@@ -163,20 +163,30 @@ application.
 
     To build for 64-bit Windows:
 
-        pacman -S mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-zeromq mingw-w64-x86_64-libsodium
+        pacman -S mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-zeromq mingw-w64-x86_64-libsodium 
 
     To build for 32-bit Windows:
  
         pacman -S mingw-w64-i686-toolchain make mingw-w64-i686-cmake mingw-w64-i686-boost mingw-w64-i686-openssl mingw-w64-i686-zeromq mingw-w64-i686-libsodium
+ 
+* Install git:
+
+      pacman -S git 
+
+* Clone the Repository:
+
+      git clone https://github.com/FuryCoin/Fury 
 
 **Building**
 
 * If you are on a 64-bit system, run:
 
+        cd Fury
         make release-static-win64
 
 * If you are on a 32-bit system, run:
 
+        cd Fury
         make release-static-win32
 
 * The resulting executables can be found in `build/release/bin`
