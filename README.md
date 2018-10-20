@@ -12,7 +12,7 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
 - Reddit: TBA
 - Twitter: TBA
 - Telegram: TBA
-- Discord: TBA
+- Discord: [Fury Discord](https://discord.gg/bA6YHZC) 
 - GitHub: [https://github.com/FuryCoin/Fury](https://github.com/FuryCoin/Fury)
 
 ## Introduction
