@@ -21,5 +21,3 @@ fi
 echo "Generating:"
 doxygen Doxyfile && echo "Backup previous version:" && rm -rf ~/fury-www-previous && mv "$wwwdir/doc" ~/fury-www-previous && cp -ar doc/ "$wwwdir/" && echo "Done, builded and copied to public - the doxygen docs" && echo "size:" && du -Dsh "$wwwdir/" && echo "files:" && find "$wwwdir/" | wc -l
 
-
-

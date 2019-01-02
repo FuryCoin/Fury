@@ -255,7 +255,6 @@ sub r_check_s {
 	
 	return !$h->bcmp($sum);
 	}
-
 	
 	
 	
