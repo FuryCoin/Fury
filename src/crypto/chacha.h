@@ -71,7 +71,7 @@ namespace crypto {
     chacha20(data, length, key.data(), reinterpret_cast<const uint8_t*>(&iv), cipher);
   }
 
-  inline void generate_chacha_key(const void *data, size_t size, chacha_key& key, uint64_t kdf_rounds) {
+inline void generate_chacha_key(const void *data, size_t size, chacha_key& key, uint64_t kdf_rounds) {
     static_assert(sizeof(chacha_key) <= sizeof(hash), "Size of hash must be at least that of chacha_key");
     epee::mlocked<tools::scrubbed_arr<char, HASH_SIZE>> pwd_hash;
     static thread_local cn_pow_hash_v1 ctx;
@@ -87,7 +87,7 @@ namespace crypto {
     static thread_local cn_pow_hash_v1 ctx;
     ctx.hash(data, size, pwd_hash.data(), true);
     for (uint64_t n = 1; n < kdf_rounds; ++n)
-      ctx.hash(pwd_hash.data(), pwd_hash.size(), pwd_hash.data());
+      ctx.hash(pwd_hash.data(), pwd_hash.size(), pwd_hash.data(), true);
     memcpy(&unwrap(unwrap(key)), pwd_hash.data(), sizeof(key));
   }
 

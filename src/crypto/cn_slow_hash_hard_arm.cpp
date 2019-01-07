@@ -26,7 +26,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Parts of this file are originally copyright (c) 2014-2017, The Monero Project
+// Parts of this file are originally copyright (c) 2014-2017, The Monero And Italo Project
 // Parts of this file are originally copyright (c) 2012-2013, The Cryptonote developers
 
 #include "cn_slow_hash.hpp"
@@ -386,6 +386,6 @@ void cn_slow_hash<MEMORY,ITER,VERSION>::hardware_hash(const void* in, size_t len
 }
 
 template class cn_slow_hash<2*1024*1024, 0x80000, 0>;
-template class cn_slow_hash<2*1024*1024, 0x20000, 1>;
+template class cn_slow_hash<4*1024*1024, 0x40000, 1>;
 
 #endif

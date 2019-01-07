@@ -72,23 +72,33 @@ namespace crypto {
     return h;
   }
 
-  inline void cn_slow_hash(const void *data, std::size_t length, hash &hash, int variant = 0) {
-    static thread_local cn_pow_hash_v1 ctx1;
+   inline void cn_slow_hash(const void *data, std::size_t length, hash &hash, int variant = 0) {
+    static thread_local cn_pow_hash_v3 ctx3; 
     static thread_local cn_pow_hash_v2 ctx2;
+    static thread_local cn_pow_hash_v1 ctx1 = cn_pow_hash_v1::make_borrowed(ctx3);
     if (variant == 0) {
-      ctx1.hash(data, length, hash.data);
-    } else {
-      ctx2.hash(data, length, hash.data);
+     ctx1.hash(data, length, hash.data);
+    }else if (variant == 1){
+     cn_slow_hash(data, length, reinterpret_cast<char *>(&hash), variant, 0/*prehashed*/);
+    }else if (variant == 2){
+     ctx2.hash(data, length, hash.data);
+    }else{
+     ctx3.hash(data, length, hash.data);
     }
   }
 
   inline void cn_slow_hash_prehashed(const void *data, std::size_t length, hash &hash, int variant = 0) {
-    static thread_local cn_pow_hash_v1 ctx1;
+    static thread_local cn_pow_hash_v3 ctx3;
     static thread_local cn_pow_hash_v2 ctx2;
+    static thread_local cn_pow_hash_v1 ctx1 = cn_pow_hash_v1::make_borrowed(ctx3);
     if (variant == 0) {
-      ctx1.hash(data, length, hash.data, true);
-    } else {
-      ctx2.hash(data, length, hash.data, true);
+     ctx1.hash(data, length, hash.data);
+    }else if (variant == 1){
+     cn_slow_hash(data, length, reinterpret_cast<char *>(&hash), variant, 1/*prehashed*/);
+    }else if (variant == 2){
+     ctx2.hash(data, length, hash.data);
+    }else{
+     ctx3.hash(data, length, hash.data);
     }
   }
 

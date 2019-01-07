@@ -26,12 +26,12 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// Parts of this file are originally copyright (c) 2014-2017, The Monero Project
+// Parts of this file are originally copyright (c) 2014-2017, The Monero And Italo Project
 // Parts of this file are originally copyright (c) 2012-2013, The Cryptonote developers
 
 #pragma once
 
-#include <inttypes.h>
+#include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -139,6 +139,7 @@ private:
 template<size_t MEMORY, size_t ITER, size_t VERSION> class cn_slow_hash;
 using cn_pow_hash_v1 = cn_slow_hash<2*1024*1024, 0x80000, 0>;
 using cn_pow_hash_v2 = cn_slow_hash<4*1024*1024, 0x40000, 1>;
+using cn_pow_hash_v3 = cn_slow_hash<2*1024*1024, 0x20000, 2>;
 
 template<size_t MEMORY, size_t ITER, size_t VERSION>
 class cn_slow_hash
@@ -158,9 +159,14 @@ public:
 
 	// Factory function enabling to temporaliy turn v2 object into v1
 	// It is caller's responsibility to ensure that v2 object is not hashing at the same time!!
-	static cn_pow_hash_v1 make_borrowed(cn_pow_hash_v2& t)
+	static cn_pow_hash_v1 make_borrowed(cn_pow_hash_v3& t)
 	{
 		return cn_pow_hash_v1(t.lpad.as_void(), t.spad.as_void());
+	}
+    
+	static cn_pow_hash_v2 make_borrowed_v2(cn_pow_hash_v3& t)
+	{
+		return cn_pow_hash_v2(t.lpad.as_void(), t.spad.as_void());
 	}
 
 	cn_slow_hash& operator= (cn_slow_hash&& other) noexcept
@@ -204,6 +210,7 @@ private:
 	static constexpr size_t MASK = ((MEMORY-1) >> 4) << 4;
 	friend cn_pow_hash_v1;
 	friend cn_pow_hash_v2;
+	friend cn_pow_hash_v3;
 
 	// Constructor enabling v1 hash to borrow v2's buffer
 	cn_slow_hash(void* lptr, void* sptr)
@@ -260,4 +267,5 @@ private:
 };
 
 extern template class cn_slow_hash<2*1024*1024, 0x80000, 0>;
-extern template class cn_slow_hash<2*1024*1024, 0x20000, 1>;
+extern template class cn_slow_hash<4*1024*1024, 0x40000, 1>;
+extern template class cn_slow_hash<2*1024*1024, 0x20000, 2>;
