@@ -2347,12 +2347,12 @@ bool Blockchain::check_tx_outputs(const transaction& tx, tx_verification_context
   }
 
   // from v9, forbid borromean range proofs
-  if (hf_version > 8) {
+  if (hf_version > 9) {
     if (tx.version >= 2) {
       const bool borromean = rct::is_rct_borromean(tx.rct_signatures.type);
       if (borromean)
       {
-        MERROR_VER("Borromean range proofs are not allowed after v8");
+        MERROR_VER("Borromean range proofs are not allowed after v9");
         tvc.m_invalid_output = true;
         return false;
       }
