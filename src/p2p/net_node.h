@@ -128,7 +128,7 @@ namespace nodetool
   private:
     const std::vector<std::string> m_seed_nodes_list =
     { "142.93.35.55:18080",
-      "139.59.16.118:18080",
+      "69.55.49.102:18080",
       "68.183.24.239:18080",
     };
 
