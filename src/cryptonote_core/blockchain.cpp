@@ -98,7 +98,7 @@ static const struct {
 
   // version 9 starts from block 60000.
   { 9, 66500, 0, 1547014680 },
-  { 10, 115000, 0, 1547024680 },
+  { 10, 114160, 0, 1547024680 },
 };
 static const uint64_t mainnet_hard_fork_version_1_till = 1;
 
