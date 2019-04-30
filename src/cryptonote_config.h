@@ -71,6 +71,7 @@
 #define FEE_PER_BYTE                                    ((uint64_t)300000)
 #define DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT        ((uint64_t)3000)
 #define DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT_V2     ((uint64_t)100000)
+#define DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT_V3     ((uint64_t)5000000)
 
 
 #define ORPHANED_BLOCKS_MAX_COUNT                       100

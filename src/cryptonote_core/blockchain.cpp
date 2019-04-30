@@ -99,6 +99,7 @@ static const struct {
   // version 9 starts from block 60000.
   { 9, 66500, 0, 1547014680 },
   { 10, 114160, 0, 1547024680 },
+  { 11, 164200, 0, 1556626560 },
 };
 static const uint64_t mainnet_hard_fork_version_1_till = 1;
 
@@ -2876,7 +2877,11 @@ uint64_t Blockchain::get_dynamic_base_fee(uint64_t block_reward, size_t median_b
 
   if (version >= HF_VERSION_PER_BYTE_FEE)
   {
-    if (version > 9)
+    if (version > 10)
+    {
+      lo = mul128(block_reward, DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT_V3, &hi);
+    }
+    else if (version > 9)
     {
       lo = mul128(block_reward, DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT_V2, &hi);
     }
