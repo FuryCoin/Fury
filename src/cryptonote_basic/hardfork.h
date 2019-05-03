@@ -59,7 +59,7 @@ namespace cryptonote
      * @param window_size the size of the window in blocks to consider for version voting
      * @param default_threshold_percent the size of the majority in percents
      */
-    HardFork(cryptonote::BlockchainDB &db, uint8_t original_version = 1, uint64_t original_version_till_height = DEFAULT_ORIGINAL_VERSION_TILL_HEIGHT, time_t forked_time = DEFAULT_FORKED_TIME, time_t update_time = DEFAULT_UPDATE_TIME, uint64_t window_size = DEFAULT_WINDOW_SIZE, uint8_t default_threshold_percent = DEFAULT_THRESHOLD_PERCENT);
+    HardFork(cryptonote::BlockchainDB &db, uint8_t original_version = 1, time_t forked_time = DEFAULT_FORKED_TIME, time_t update_time = DEFAULT_UPDATE_TIME, uint64_t window_size = DEFAULT_WINDOW_SIZE, uint8_t default_threshold_percent = DEFAULT_THRESHOLD_PERCENT);
 
     /**
      * @brief add a new hardfork height
@@ -148,6 +148,16 @@ namespace cryptonote
      */
     bool reorganize_from_block_height(uint64_t height);
     bool reorganize_from_chain_height(uint64_t height);
+
+    /**
+     * @brief called when one or more blocks are popped from the blockchain
+     *
+     * The current fork will be updated by looking up the db,
+     * which is much cheaper than recomputing everything
+     *
+     * @param new_chain_height the height of the chain after popping
+     */
+    void on_block_popped(uint64_t new_chain_height);
 
     /**
      * @brief returns current state at the given time
@@ -250,8 +260,6 @@ namespace cryptonote
     uint8_t default_threshold_percent;
 
     uint8_t original_version;
-    uint64_t original_version_till_height;
-
     std::vector<Params> heights;
 
     std::deque<uint8_t> versions; /* rolling window of the last N blocks' versions */

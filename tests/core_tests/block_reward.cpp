@@ -37,7 +37,7 @@ using namespace cryptonote;
 namespace
 {
   bool construct_miner_tx_by_weight(transaction& miner_tx, uint64_t height, uint64_t already_generated_coins,
-    const account_public_address& miner_address, std::vector<size_t>& block_weights, size_t target_tx_weight,
+    const account_public_address& miner_address, std::vector<uint64_t>& block_weights, size_t target_tx_weight,
     size_t target_block_weight, uint64_t fee = 0)
   {
     if (!construct_miner_tx(height, misc_utils::median(block_weights), already_generated_coins, target_block_weight, fee, miner_address, miner_tx))
@@ -74,7 +74,7 @@ namespace
   bool construct_max_weight_block(test_generator& generator, block& blk, const block& blk_prev, const account_base& miner_account,
     size_t median_block_count = CRYPTONOTE_REWARD_BLOCKS_WINDOW)
   {
-    std::vector<size_t> block_weights;
+    std::vector<uint64_t> block_weights;
     generator.get_last_n_block_weights(block_weights, get_block_hash(blk_prev), median_block_count);
 
     size_t median = misc_utils::median(block_weights);
@@ -190,7 +190,7 @@ bool gen_block_reward::generate(std::vector<test_event_entry>& events) const
     size_t txs_1_weight = get_transaction_weight(tx_1) + get_transaction_weight(tx_2);
     uint64_t txs_fee = get_tx_fee(tx_1) + get_tx_fee(tx_2);
 
-    std::vector<size_t> block_weights;
+    std::vector<uint64_t> block_weights;
     generator.get_last_n_block_weights(block_weights, get_block_hash(blk_7), CRYPTONOTE_REWARD_BLOCKS_WINDOW);
     size_t median = misc_utils::median(block_weights);
 
@@ -270,5 +270,71 @@ bool gen_block_reward::check_block_rewards(cryptonote::core& /*c*/, size_t /*ev_
   block blk_n3 = boost::get<block>(events[m_checked_blocks_indices[7]]);
   CHECK_EQ((11 + 13) * TESTS_DEFAULT_FEE, get_tx_out_amount(blk_n3.miner_tx));
 
+  return true;
+}
+
+gen_batched_governance_reward::gen_batched_governance_reward()
+{
+  REGISTER_CALLBACK_METHOD(gen_batched_governance_reward, check_batched_governance_amount_matches);
+}
+
+static uint64_t expected_total_governance_paid = 0;
+bool gen_batched_governance_reward::generate(std::vector<test_event_entry>& events) const
+{
+  const config_t &network = cryptonote::get_config(cryptonote::FAKECHAIN, 9);
+
+  const get_test_options<gen_batched_governance_reward> test_options = {};
+  linear_chain_generator batched_governance_generator(events, test_options.hard_forks);
+  {
+    batched_governance_generator.rewind_until_version(9);
+
+    uint64_t blocks_to_gen = network.GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS - batched_governance_generator.height();
+    batched_governance_generator.rewind_blocks_n(blocks_to_gen);
+  }
+
+  {
+    // NOTE(fury): Since hard fork 8 we have an emissions curve change, so if
+    // you don't atleast progress and generate blocks from hf8 you will run into
+    // problems
+    std::vector<test_event_entry> unused_events;
+    linear_chain_generator no_batched_governance_generator(unused_events, test_options.hard_forks);
+    no_batched_governance_generator.rewind_until_version(11);
+
+    while(no_batched_governance_generator.height() < batched_governance_generator.height())
+      no_batched_governance_generator.create_block();
+
+    // NOTE(fury): Skip the last block as that is the batched payout height, we
+    // don't include the governance reward of that height, that gets picked up
+    // in the next batch.
+    const std::vector<cryptonote::block>& blockchain = no_batched_governance_generator.blocks();
+    for (size_t block_height = 1; block_height < blockchain.size() - 1; ++block_height)
+    {
+      const cryptonote::block &block = blockchain[block_height];
+      expected_total_governance_paid += block.miner_tx.vout.back().amount;
+    }
+  }
+
+  DO_CALLBACK(events, "check_batched_governance_amount_matches");
+  return true;
+}
+
+bool gen_batched_governance_reward::check_batched_governance_amount_matches(cryptonote::core& c, size_t ev_index, const std::vector<test_event_entry>& events)
+{
+  DEFINE_TESTS_ERROR_CONTEXT("gen_batched_governance_reward::check_batched_governance_amount_matches");
+
+  uint64_t height = c.get_current_blockchain_height();
+  std::vector<cryptonote::block> blockchain;
+  if (!c.get_blocks((uint64_t)0, (size_t)height, blockchain))
+    return false;
+
+  uint64_t governance = 0;
+  for (size_t block_height = 1; block_height < blockchain.size(); ++block_height)
+  {
+    const cryptonote::block &block = blockchain[block_height];
+    if (cryptonote::block_has_governance_output(cryptonote::FAKECHAIN, block))
+      governance += block.miner_tx.vout.back().amount;
+  }
+
+  CHECK_EQ(governance, expected_total_governance_paid);
   return true;
 }

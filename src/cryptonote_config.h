@@ -30,8 +30,10 @@
 
 #pragma once
 
+#include <stdexcept>
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#include <stdexcept>
 
 #define CRYPTONOTE_DNS_TIMEOUT_MS                       20000
 
@@ -45,9 +47,26 @@
 #define CURRENT_BLOCK_MAJOR_VERSION                     1
 #define CURRENT_BLOCK_MINOR_VERSION                     0
 #define CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT              60*10
+#define CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT_V2           60*10
 #define CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE             10
+#define CRYPTONOTE_DEFAULT_TX_MIXIN                     10
+
+#define STAKING_REQUIREMENT_LOCK_BLOCKS_EXCESS          20
+#define STAKING_PORTIONS                                UINT64_C(0xfffffffffffffffc)
+#define MAX_NUMBER_OF_CONTRIBUTORS                      4
+#define MIN_PORTIONS                                    (STAKING_PORTIONS / MAX_NUMBER_OF_CONTRIBUTORS)
+
+static_assert(STAKING_PORTIONS % MAX_NUMBER_OF_CONTRIBUTORS == 0, "Use a multiple of four, so that it divides easily by max number of contributors.");
+static_assert(STAKING_PORTIONS % 2 == 0, "Use a multiple of two, so that it divides easily by two contributors.");
+static_assert(STAKING_PORTIONS % 3 == 0, "Use a multiple of three, so that it divides easily by three contributors.");
+
+#define STAKING_AUTHORIZATION_EXPIRATION_WINDOW         (60*60*24*7*2)  // 2 weeks
 
 #define BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW               11
+
+#define UPTIME_PROOF_BUFFER_IN_SECONDS                  (5*60) // The acceptable window of time to accept a peer's uptime proof from its reported timestamp
+#define UPTIME_PROOF_FREQUENCY_IN_SECONDS               (60*60)
+#define UPTIME_PROOF_MAX_TIME_IN_SECONDS                (UPTIME_PROOF_FREQUENCY_IN_SECONDS * 18 + UPTIME_PROOF_BUFFER_IN_SECONDS)
 
 // MONEY_SUPPLY - total number coins to be generated
 #define MONEY_SUPPLY                                    ((uint64_t)(100000000000000000))
@@ -58,6 +77,8 @@
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2    1000000 //size of block (bytes) after which reward for block calculated using block size
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1    100000 //size of block (bytes) after which reward for block calculated using block size - before first fork
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V5    1000000 //size of block (bytes) after which reward for block calculated using block size - second change, from v5
+#define CRYPTONOTE_LONG_TERM_BLOCK_WEIGHT_WINDOW_SIZE   100000 // size in blocks of the long term block weight median window
+#define CRYPTONOTE_SHORT_TERM_BLOCK_WEIGHT_SURGE_FACTOR 50
 #define CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE          600
 #define CRYPTONOTE_DISPLAY_DECIMAL_POINT                8
 // COIN - number of smallest units in one coin
@@ -87,6 +108,9 @@
 // Premine code
 // You can read more about the premine structure at https://Fury.org/
 #define PREMINE                                         ((uint64_t)(20000000000000000))
+#define BLOCKS_EXPECTED_IN_HOURS(val)                   (((60 * 60) / DIFFICULTY_TARGET_V2) * (val))
+#define BLOCKS_EXPECTED_IN_DAYS(val)                    (BLOCKS_EXPECTED_IN_HOURS(24) * (val))
+#define BLOCKS_EXPECTED_IN_YEARS(val)                   (BLOCKS_EXPECTED_IN_DAYS(365) * (val))
 
 #define CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V1   DIFFICULTY_TARGET_V1 * CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS
 #define CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_SECONDS_V2   DIFFICULTY_TARGET_V2 * CRYPTONOTE_LOCKED_TX_ALLOWED_DELTA_BLOCKS
@@ -103,6 +127,8 @@
 #define CRYPTONOTE_MEMPOOL_TX_LIVETIME                    (86400*3) //seconds, three days
 #define CRYPTONOTE_MEMPOOL_TX_FROM_ALT_BLOCK_LIVETIME     604800 //seconds, one week
 
+#define MEMPOOL_PRUNE_NON_STANDARD_TX_LIFETIME          (2 * 60 * 60) // seconds, 2 hours
+
 #define COMMAND_RPC_GET_BLOCKS_FAST_MAX_COUNT           1000
 
 #define P2P_LOCAL_WHITE_PEERLIST_LIMIT                  1000
@@ -118,6 +144,8 @@
 #define P2P_DEFAULT_HANDSHAKE_INVOKE_TIMEOUT            5000       //5 seconds
 #define P2P_DEFAULT_WHITELIST_CONNECTIONS_PERCENT       70
 #define P2P_DEFAULT_ANCHOR_CONNECTIONS_COUNT            2
+#define P2P_DEFAULT_LIMIT_RATE_UP                       2048       // kB/s
+#define P2P_DEFAULT_LIMIT_RATE_DOWN                     8192       // kB/s
 
 #define P2P_FAILED_ADDR_FORGET_SECONDS                  (60*60)     //1 hour
 #define P2P_IP_BLOCKTIME                                (60*60*24)  //24 hour
@@ -139,19 +167,24 @@
 #define THREAD_STACK_SIZE                       5 * 1024 * 1024
 
 #define HF_VERSION_DYNAMIC_FEE                  6
-#define HF_VERSION_MIN_MIXIN_4                  1
-#define HF_VERSION_MIN_MIXIN_6                  1
-#define HF_VERSION_MIN_MIXIN_10                 8
+#define HF_VERSION_MIN_MIXIN_9                  8
 #define HF_VERSION_ENFORCE_RCT                  6
 #define HF_VERSION_PER_BYTE_FEE                 8
+#define HF_VERSION_SMALLER_BP                   11
+#define HF_VERSION_LONG_TERM_BLOCK_WEIGHT       11
 
 #define PER_KB_FEE_QUANTIZATION_DECIMALS        8
 
 #define HASH_OF_HASHES_STEP                     256
 
-#define DEFAULT_TXPOOL_MAX_WEIGHT                 648000000ull // 3 days at 300000, in bytes
+#define DEFAULT_TXPOOL_MAX_WEIGHT               648000000ull // 3 days at 300000, in bytes
 
 #define BULLETPROOF_MAX_OUTPUTS                 16
+
+#define CRYPTONOTE_PRUNING_STRIPE_SIZE          4096 // the smaller, the smoother the increase
+#define CRYPTONOTE_PRUNING_LOG_STRIPES          3 // the higher, the more space saved
+#define CRYPTONOTE_PRUNING_TIP_BLOCKS           5500 // the smaller, the more space saved
+//#define CRYPTONOTE_PRUNING_DEBUG_SPOOF_SEED
 
 // New constants are intended to go here
 namespace config
@@ -174,6 +207,13 @@ namespace config
   std::string const GENESIS_TX = "010a01ff0001b197bcc5c605029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd088071210193e9d081571eebf5c724cad9cfc41da42aa97dbc55d9749a9d2f498a86eb1ef3";
   uint32_t const GENESIS_NONCE = 10000;
 
+    uint64_t const GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS = (10000000000);
+    std::string const GOVERNANCE_WALLET_ADDRESS[] =
+    {
+      "furye4XeBLUgM9NnbMSp8CCnh8W64GGcu1msBhkjS1Cj41MkVPKmeNRXo4TZLvqVXHK92hMCaJaBJEk5Wee3qmBvcRmAsAAjyaD", // hardfork v7-10
+      "furye4XeBLUgM9NnbMSp8CCnh8W64GGcu1msBhkjS1Cj41MkVPKmeNRXo4TZLvqVXHK92hMCaJaBJEk5Wee3qmBvcRmAsAAjyaD", // hardfork v11
+    };
+
   namespace testnet
   {
     uint64_t const CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX = 53;
@@ -187,6 +227,13 @@ namespace config
       } };
     std::string const GENESIS_TX = "010a01ff0001b197bcc5c605029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd088071210193e9d081571eebf5c724cad9cfc41da42aa97dbc55d9749a9d2f498a86eb1ef3";
     uint32_t const GENESIS_NONCE = 10001;
+
+    uint64_t const GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS = 1000;
+    std::string const GOVERNANCE_WALLET_ADDRESS[] =
+    {
+      "furye4XeBLUgM9NnbMSp8CCnh8W64GGcu1msBhkjS1Cj41MkVPKmeNRXo4TZLvqVXHK92hMCaJaBJEk5Wee3qmBvcRmAsAAjyaD", // hardfork v7-9
+      "furye4XeBLUgM9NnbMSp8CCnh8W64GGcu1msBhkjS1Cj41MkVPKmeNRXo4TZLvqVXHK92hMCaJaBJEk5Wee3qmBvcRmAsAAjyaD", // hardfork v10
+    };
   }
 
   namespace stagenet
@@ -202,11 +249,22 @@ namespace config
       } };
     std::string const GENESIS_TX = "010a01ff0001b197bcc5c605029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd088071210193e9d081571eebf5c724cad9cfc41da42aa97dbc55d9749a9d2f498a86eb1ef3";
     uint32_t const GENESIS_NONCE = 10002;
+
+    uint64_t const GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS = ((60 * 60 * 24 * 7) / DIFFICULTY_TARGET_V2);
+    std::string const GOVERNANCE_WALLET_ADDRESS[] =
+    {
+      "furye4XeBLUgM9NnbMSp8CCnh8W64GGcu1msBhkjS1Cj41MkVPKmeNRXo4TZLvqVXHK92hMCaJaBJEk5Wee3qmBvcRmAsAAjyaD", // hardfork v7-9
+      "furye4XeBLUgM9NnbMSp8CCnh8W64GGcu1msBhkjS1Cj41MkVPKmeNRXo4TZLvqVXHK92hMCaJaBJEk5Wee3qmBvcRmAsAAjyaD", // hardfork v10
+    };
   }
 }
 
 namespace cryptonote
 {
+   enum network_version
+  {
+    network_version_count,
+  };
   enum network_type : uint8_t
   {
     MAINNET = 0,
@@ -217,19 +275,21 @@ namespace cryptonote
   };
   struct config_t
   {
-    uint64_t const CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX;
-    uint64_t const CRYPTONOTE_PUBLIC_INTEGRATED_ADDRESS_BASE58_PREFIX;
-    uint64_t const CRYPTONOTE_PUBLIC_SUBADDRESS_BASE58_PREFIX;
-    uint16_t const P2P_DEFAULT_PORT;
-    uint16_t const RPC_DEFAULT_PORT;
-    uint16_t const ZMQ_RPC_DEFAULT_PORT;
-    boost::uuids::uuid const NETWORK_ID;
-    std::string const GENESIS_TX;
-    uint32_t const GENESIS_NONCE;
+    uint64_t CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX;
+    uint64_t CRYPTONOTE_PUBLIC_INTEGRATED_ADDRESS_BASE58_PREFIX;
+    uint64_t CRYPTONOTE_PUBLIC_SUBADDRESS_BASE58_PREFIX;
+    uint16_t P2P_DEFAULT_PORT;
+    uint16_t RPC_DEFAULT_PORT;
+    uint16_t ZMQ_RPC_DEFAULT_PORT;
+    boost::uuids::uuid NETWORK_ID;
+    std::string GENESIS_TX;
+    uint32_t GENESIS_NONCE;
+    uint64_t GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS;
+    std::string const *GOVERNANCE_WALLET_ADDRESS;
   };
-  inline const config_t& get_config(network_type nettype)
+  inline const config_t& get_config(network_type nettype, int hard_fork_version = 7)
   {
-    static const config_t mainnet = {
+    static config_t mainnet = {
       ::config::CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX,
       ::config::CRYPTONOTE_PUBLIC_INTEGRATED_ADDRESS_BASE58_PREFIX,
       ::config::CRYPTONOTE_PUBLIC_SUBADDRESS_BASE58_PREFIX,
@@ -238,9 +298,12 @@ namespace cryptonote
       ::config::ZMQ_RPC_DEFAULT_PORT,
       ::config::NETWORK_ID,
       ::config::GENESIS_TX,
-      ::config::GENESIS_NONCE
+      ::config::GENESIS_NONCE,
+      ::config::GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS,
+      &::config::GOVERNANCE_WALLET_ADDRESS[0],
     };
-    static const config_t testnet = {
+
+    static config_t testnet = {
       ::config::testnet::CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX,
       ::config::testnet::CRYPTONOTE_PUBLIC_INTEGRATED_ADDRESS_BASE58_PREFIX,
       ::config::testnet::CRYPTONOTE_PUBLIC_SUBADDRESS_BASE58_PREFIX,
@@ -249,9 +312,12 @@ namespace cryptonote
       ::config::testnet::ZMQ_RPC_DEFAULT_PORT,
       ::config::testnet::NETWORK_ID,
       ::config::testnet::GENESIS_TX,
-      ::config::testnet::GENESIS_NONCE
+      ::config::testnet::GENESIS_NONCE,
+      ::config::testnet::GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS,
+      &::config::testnet::GOVERNANCE_WALLET_ADDRESS[0],
     };
-    static const config_t stagenet = {
+
+    static config_t stagenet = {
       ::config::stagenet::CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX,
       ::config::stagenet::CRYPTONOTE_PUBLIC_INTEGRATED_ADDRESS_BASE58_PREFIX,
       ::config::stagenet::CRYPTONOTE_PUBLIC_SUBADDRESS_BASE58_PREFIX,
@@ -260,14 +326,46 @@ namespace cryptonote
       ::config::stagenet::ZMQ_RPC_DEFAULT_PORT,
       ::config::stagenet::NETWORK_ID,
       ::config::stagenet::GENESIS_TX,
-      ::config::stagenet::GENESIS_NONCE
+      ::config::stagenet::GENESIS_NONCE,
+      ::config::stagenet::GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS,
+      &::config::stagenet::GOVERNANCE_WALLET_ADDRESS[0],
     };
+
     switch (nettype)
     {
-      case MAINNET: return mainnet;
-      case TESTNET: return testnet;
-      case STAGENET: return stagenet;
-      case FAKECHAIN: return mainnet;
+      case MAINNET: case FAKECHAIN:
+      {
+        if (nettype == FAKECHAIN)
+          mainnet.GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS = 100;
+
+        if (hard_fork_version <= 9)
+          mainnet.GOVERNANCE_WALLET_ADDRESS = &::config::GOVERNANCE_WALLET_ADDRESS[0];
+        else
+          mainnet.GOVERNANCE_WALLET_ADDRESS = &::config::GOVERNANCE_WALLET_ADDRESS[1];
+
+        return mainnet;
+      }
+
+      case TESTNET:
+      {
+        if (hard_fork_version <= 11)
+          testnet.GOVERNANCE_WALLET_ADDRESS = &::config::testnet::GOVERNANCE_WALLET_ADDRESS[0];
+        else
+          testnet.GOVERNANCE_WALLET_ADDRESS = &::config::testnet::GOVERNANCE_WALLET_ADDRESS[1];
+
+        return testnet;
+      }
+
+      case STAGENET:
+      {
+        if (hard_fork_version <= 11)
+          stagenet.GOVERNANCE_WALLET_ADDRESS = &::config::stagenet::GOVERNANCE_WALLET_ADDRESS[0];
+        else
+          stagenet.GOVERNANCE_WALLET_ADDRESS = &::config::stagenet::GOVERNANCE_WALLET_ADDRESS[1];
+
+        return stagenet;
+      }
+
       default: throw std::runtime_error("Invalid network type");
     }
   };

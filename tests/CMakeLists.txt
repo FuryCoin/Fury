@@ -70,8 +70,8 @@ else ()
 endif (GTest_FOUND)
 
 file(COPY
-  data/wallet_9svHk1.keys
-  data/wallet_9svHk1
+  data/wallet_testnet.keys
+  data/wallet_testnet
   data/outputs
   data/unsigned_fury_tx
   data/signed_fury_tx
@@ -85,6 +85,7 @@ add_subdirectory(performance_tests)
 add_subdirectory(core_proxy)
 add_subdirectory(unit_tests)
 add_subdirectory(difficulty)
+add_subdirectory(block_weight)
 add_subdirectory(hash)
 add_subdirectory(net_load_tests)
 if (BUILD_GUI_DEPS)
@@ -115,6 +116,7 @@ add_test(
 set(enabled_tests
     core_tests
     difficulty
+    block_weight
     hash
     performance_tests
     core_proxy

@@ -32,7 +32,6 @@ project (fury CXX)
 file(GLOB CRYPTONOTE_PROTOCOL *)
 source_group(cryptonote_protocol FILES ${CRYPTONOTE_PROTOCOL})
 
-#fury_private_headers(cryptonote_protocol ${CRYPTONOTE_PROTOCOL})
 fury_add_library(cryptonote_protocol ${CRYPTONOTE_PROTOCOL})
 target_link_libraries(cryptonote_protocol
   PUBLIC

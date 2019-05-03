@@ -178,6 +178,8 @@ struct TransactionInfo
     };
 
     virtual ~TransactionInfo() = 0;
+    virtual bool isServiceNodeReward() const = 0;
+    virtual bool isMinerReward() const = 0;
     virtual int  direction() const = 0;
     virtual bool isPending() const = 0;
     virtual bool isFailed() const = 0;
@@ -575,6 +577,12 @@ struct Wallet
     virtual uint64_t approximateBlockChainHeight() const = 0;
 
     /**
+    * @brief estimateBlockChainHeight - returns estimate blockchain height. More accurate than approximateBlockChainHeight,
+    *                                   uses daemon height and falls back to calculation from date/time
+    * @return
+    **/ 
+    virtual uint64_t estimateBlockChainHeight() const = 0;
+    /**
      * @brief daemonBlockChainHeight - returns daemon blockchain height
      * @return 0 - in case error communicating with the daemon.
      *             status() will return Status_Error and errorString() will return verbose error description
@@ -599,6 +607,8 @@ struct Wallet
     static uint64_t amountFromDouble(double amount);
     static std::string genPaymentId();
     static bool paymentIdValid(const std::string &paiment_id);
+    /// Check if the string represents a valid public key (regardless of whether the service node actually exists or not)
+    static bool serviceNodePubkeyValid(const std::string &str);
     static bool addressValid(const std::string &str, NetworkType nettype);
     static bool addressValid(const std::string &str, bool testnet)          // deprecated
     {
@@ -642,6 +652,17 @@ struct Wallet
      * @brief refreshAsync - refreshes wallet asynchronously.
      */
     virtual void refreshAsync() = 0;
+
+    /**
+     * @brief rescanBlockchain - rescans the wallet, updating transactions from daemon
+     * @return - true if refreshed successfully;
+     */
+    virtual bool rescanBlockchain() = 0;
+
+    /**
+     * @brief rescanBlockchainAsync - rescans wallet asynchronously, starting from genesys
+     */
+    virtual void rescanBlockchainAsync() = 0;
 
     /**
      * @brief setAutoRefreshInterval - setup interval for automatic refresh.
@@ -930,12 +951,15 @@ struct Wallet
      * \return Device they are on
      */
     virtual Device getDeviceType() const = 0;
+
+    /// Prepare a staking transaction; return nullptr on failure
+    virtual PendingTransaction* stakePending(const std::string& service_node_key, const std::string& address, const std::string& amount, std::string& error_msg) = 0;
 };
 
 /**
  * @brief WalletManager - provides functions to manage wallets
  */
-struct WalletManager
+struct WalletManagerBase
 {
 
     /*!
@@ -1189,7 +1213,7 @@ struct WalletManagerFactory
         LogLevel_Max = LogLevel_4
     };
 
-    static WalletManager * getWalletManager();
+    static WalletManagerBase * getWalletManager();
     static void setLogLevel(int level);
     static void setLogCategories(const std::string &categories);
 };

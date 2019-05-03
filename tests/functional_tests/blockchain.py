@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # Copyright (c) 2018 The Fury Project
+# Copyright (c) 2018 The bbb Project
 # 
 # All rights reserved.
 # 

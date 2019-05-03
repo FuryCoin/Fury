@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2018, The Fury Project
+// Copyright (c) 2016-2018, The bbb Project
 // 
 // All rights reserved.
 // 

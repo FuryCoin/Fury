@@ -57,6 +57,7 @@ public:
   bool handle_incoming_tx(const cryptonote::blobdata& tx_blob, cryptonote::tx_verification_context& tvc, bool keeped_by_block, bool relayed, bool do_not_relay) { return true; }
   bool handle_incoming_txs(const std::vector<cryptonote::blobdata>& tx_blob, std::vector<cryptonote::tx_verification_context>& tvc, bool keeped_by_block, bool relayed, bool do_not_relay) { return true; }
   bool handle_incoming_block(const cryptonote::blobdata& block_blob, cryptonote::block_verification_context& bvc, bool update_miner_blocktemplate = true) { return true; }
+  bool handle_uptime_proof(const cryptonote::NOTIFY_UPTIME_PROOF::request &proof) { return false; }
   void pause_mine(){}
   void resume_mine(){}
   bool on_idle(){return true;}
@@ -83,7 +84,13 @@ public:
   cryptonote::difficulty_type get_block_cumulative_difficulty(uint64_t height) const { return 0; }
   bool fluffy_blocks_enabled() const { return false; }
   uint64_t prevalidate_block_hashes(uint64_t height, const std::vector<crypto::hash> &hashes) { return 0; }
+  bool pad_transactions() { return false; }
+  uint32_t get_blockchain_pruning_seed() const { return 0; }
+  bool prune_blockchain(uint32_t pruning_seed = 0) { return true; }
   void stop() {}
+
+  // TODO(fury): Write tests
+  bool add_deregister_vote(const service_nodes::deregister_vote& vote, cryptonote::vote_verification_context &vvc) { return true; }
 };
 
 typedef nodetool::node_server<cryptonote::t_cryptonote_protocol_handler<test_core>> Server;

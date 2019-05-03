@@ -33,6 +33,8 @@
 #include <vector>
 
 #include "common/util.h"
+#include "cryptonote_basic/cryptonote_basic.h"
+#include "cryptonote_basic/tx_extra.h"
 #include "cryptonote_core/cryptonote_tx_utils.h"
 
 namespace
@@ -139,7 +141,7 @@ TEST(parse_and_validate_tx_extra, is_valid_tx_extra_parsed)
   cryptonote::account_base acc;
   acc.generate();
   cryptonote::blobdata b = "dsdsdfsdfsf";
-  ASSERT_TRUE(cryptonote::construct_miner_tx(0, 0, 10000000000000, 1000, TEST_FEE, acc.get_keys().m_account_address, tx, b, 1));
+  ASSERT_TRUE(cryptonote::construct_miner_tx(0, 0, 10000000000000, 1000, TEST_FEE, acc.get_keys().m_account_address, tx, b));
   crypto::public_key tx_pub_key = cryptonote::get_tx_pub_key_from_extra(tx);
   ASSERT_NE(tx_pub_key, crypto::null_pkey);
 }
@@ -149,7 +151,7 @@ TEST(parse_and_validate_tx_extra, fails_on_big_extra_nonce)
   cryptonote::account_base acc;
   acc.generate();
   cryptonote::blobdata b(TX_EXTRA_NONCE_MAX_COUNT + 1, 0);
-  ASSERT_FALSE(cryptonote::construct_miner_tx(0, 0, 10000000000000, 1000, TEST_FEE, acc.get_keys().m_account_address, tx, b, 1));
+  ASSERT_FALSE(cryptonote::construct_miner_tx(0, 0, 10000000000000, 1000, TEST_FEE, acc.get_keys().m_account_address, tx, b));
 }
 TEST(parse_and_validate_tx_extra, fails_on_wrong_size_in_extra_nonce)
 {
@@ -165,11 +167,11 @@ TEST(validate_parse_amount_case, validate_parse_amount)
   uint64_t res = 0;
   bool r = cryptonote::parse_amount(res, "0.0001");
   ASSERT_TRUE(r);
-  ASSERT_EQ(res, 100000000);
+  ASSERT_EQ(res, 100000);
 
   r = cryptonote::parse_amount(res, "100.0001");
   ASSERT_TRUE(r);
-  ASSERT_EQ(res, 100000100000000);
+  ASSERT_EQ(res, 100000100000);
 
   r = cryptonote::parse_amount(res, "000.0000");
   ASSERT_TRUE(r);
@@ -182,11 +184,11 @@ TEST(validate_parse_amount_case, validate_parse_amount)
 
   r = cryptonote::parse_amount(res, "   100.0001    ");
   ASSERT_TRUE(r);
-  ASSERT_EQ(res, 100000100000000);
+  ASSERT_EQ(res, 100000100000);
 
   r = cryptonote::parse_amount(res, "   100.0000    ");
   ASSERT_TRUE(r);
-  ASSERT_EQ(res, 100000000000000);
+  ASSERT_EQ(res, 100000000000);
 
   r = cryptonote::parse_amount(res, "   100. 0000    ");
   ASSERT_FALSE(r);
@@ -202,4 +204,86 @@ TEST(validate_parse_amount_case, validate_parse_amount)
 
   r = cryptonote::parse_amount(res, "1 00.00 00");
   ASSERT_FALSE(r);
+}
+
+TEST(sort_tx_extra, empty)
+{
+  std::vector<uint8_t> extra, sorted;
+  ASSERT_TRUE(cryptonote::sort_tx_extra(extra, sorted));
+  ASSERT_EQ(extra, sorted);
+}
+
+TEST(sort_tx_extra, pubkey)
+{
+  std::vector<uint8_t> sorted;
+  const uint8_t extra_arr[] = {1, 30, 208, 98, 162, 133, 64, 85, 83, 112, 91, 188, 89, 211, 24, 131, 39, 154, 22, 228,
+    80, 63, 198, 141, 173, 111, 244, 183, 4, 149, 186, 140, 230};
+  std::vector<uint8_t> extra(&extra_arr[0], &extra_arr[0] + sizeof(extra_arr));
+  ASSERT_TRUE(cryptonote::sort_tx_extra(extra, sorted));
+  ASSERT_EQ(extra, sorted);
+}
+
+TEST(sort_tx_extra, two_pubkeys)
+{
+  std::vector<uint8_t> sorted;
+  const uint8_t extra_arr[] = {1, 30, 208, 98, 162, 133, 64, 85, 83, 112, 91, 188, 89, 211, 24, 131, 39, 154, 22, 228,
+    80, 63, 198, 141, 173, 111, 244, 183, 4, 149, 186, 140, 230,
+    1, 30, 208, 98, 162, 133, 64, 85, 83, 112, 91, 188, 89, 211, 24, 131, 39, 154, 22, 228,
+    80, 63, 198, 141, 173, 111, 244, 183, 4, 149, 186, 140, 230};
+  std::vector<uint8_t> extra(&extra_arr[0], &extra_arr[0] + sizeof(extra_arr));
+  ASSERT_TRUE(cryptonote::sort_tx_extra(extra, sorted));
+  ASSERT_EQ(extra, sorted);
+}
+
+TEST(sort_tx_extra, keep_order)
+{
+  std::vector<uint8_t> sorted;
+  const uint8_t extra_arr[] = {1, 30, 208, 98, 162, 133, 64, 85, 83, 112, 91, 188, 89, 211, 24, 131, 39, 154, 22, 228,
+    80, 63, 198, 141, 173, 111, 244, 183, 4, 149, 186, 140, 230,
+    2, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+  std::vector<uint8_t> extra(&extra_arr[0], &extra_arr[0] + sizeof(extra_arr));
+  ASSERT_TRUE(cryptonote::sort_tx_extra(extra, sorted));
+  ASSERT_EQ(extra, sorted);
+}
+
+TEST(sort_tx_extra, switch_order)
+{
+  std::vector<uint8_t> sorted;
+  const uint8_t extra_arr[] = {2, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+    1, 30, 208, 98, 162, 133, 64, 85, 83, 112, 91, 188, 89, 211, 24, 131, 39, 154, 22, 228,
+    80, 63, 198, 141, 173, 111, 244, 183, 4, 149, 186, 140, 230};
+  const uint8_t expected_arr[] = {1, 30, 208, 98, 162, 133, 64, 85, 83, 112, 91, 188, 89, 211, 24, 131, 39, 154, 22, 228,
+    80, 63, 198, 141, 173, 111, 244, 183, 4, 149, 186, 140, 230,
+    2, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0};
+  std::vector<uint8_t> extra(&extra_arr[0], &extra_arr[0] + sizeof(extra_arr));
+  ASSERT_TRUE(cryptonote::sort_tx_extra(extra, sorted));
+  std::vector<uint8_t> expected(&expected_arr[0], &expected_arr[0] + sizeof(expected_arr));
+  ASSERT_EQ(expected, sorted);
+}
+
+TEST(sort_tx_extra, invalid)
+{
+  std::vector<uint8_t> sorted;
+  const uint8_t extra_arr[] = {1};
+  std::vector<uint8_t> extra(&extra_arr[0], &extra_arr[0] + sizeof(extra_arr));
+  ASSERT_FALSE(cryptonote::sort_tx_extra(extra, sorted));
+}
+
+TEST(sort_tx_extra, invalid_suffix_strict)
+{
+  std::vector<uint8_t> sorted;
+  const uint8_t extra_arr[] = {2, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+  std::vector<uint8_t> extra(&extra_arr[0], &extra_arr[0] + sizeof(extra_arr));
+  ASSERT_FALSE(cryptonote::sort_tx_extra(extra, sorted));
+}
+
+TEST(sort_tx_extra, invalid_suffix_partial)
+{
+  std::vector<uint8_t> sorted;
+  const uint8_t extra_arr[] = {2, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+  const uint8_t expected_arr[] = {2, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+  std::vector<uint8_t> extra(&extra_arr[0], &extra_arr[0] + sizeof(extra_arr));
+  ASSERT_TRUE(cryptonote::sort_tx_extra(extra, sorted, true));
+  std::vector<uint8_t> expected(&expected_arr[0], &expected_arr[0] + sizeof(expected_arr));
+  ASSERT_EQ(sorted, expected);
 }

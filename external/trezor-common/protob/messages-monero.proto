@@ -1,0 +1,412 @@
+syntax = "proto2";
+package hw.trezor.messages.fury;
+
+// Sugar for easier handling in Java
+option java_package = "com.satoshilabs.trezor.lib.protobuf";
+option java_outer_classname = "TrezorMessageFury";
+
+/**
+ * Structure representing Fury transaction source entry, UTXO
+ * @embed
+ */
+message FuryTransactionSourceEntry {
+    repeated FuryOutputEntry outputs = 1;
+    optional uint64 real_output = 2;
+    optional bytes real_out_tx_key = 3;
+    repeated bytes real_out_additional_tx_keys = 4;
+    optional uint64 real_output_in_tx_index = 5;
+    optional uint64 amount = 6;
+    optional bool rct = 7;
+    optional bytes mask = 8;
+    optional FuryMultisigKLRki multisig_kLRki = 9;
+    message FuryOutputEntry {
+        optional uint64 idx = 1;
+        optional FuryRctKeyPublic key = 2;
+        message FuryRctKeyPublic {
+            optional bytes dest = 1;
+            optional bytes commitment = 2;
+        }
+    }
+    message FuryMultisigKLRki {
+        optional bytes K = 1;
+        optional bytes L = 2;
+        optional bytes R = 3;
+        optional bytes ki = 4;
+    }
+}
+
+/**
+ * Structure representing Fury transaction destination entry
+ * @embed
+ */
+message FuryTransactionDestinationEntry {
+    optional uint64 amount = 1;
+    optional FuryAccountPublicAddress addr = 2;
+    optional bool is_subaddress = 3;
+    /**
+     * Structure representing Fury public address
+     */
+    message FuryAccountPublicAddress {
+        optional bytes spend_public_key = 1;
+        optional bytes view_public_key = 2;
+    }
+}
+
+/**
+ * Range sig parameters / data.
+ */
+message FuryTransactionRsigData {
+    optional uint32 rsig_type = 1;  // range signature (aka proof) type
+    optional uint32 offload_type = 2;
+    repeated uint64 grouping = 3;  // aggregation scheme for BP
+
+    optional bytes mask = 4;       // mask vector
+    optional bytes rsig = 5;       // range sig data, all of it or partial (based on rsig_parts)
+    repeated bytes rsig_parts = 6;
+}
+
+/**
+ * Request: Ask device for public address derived from seed and address_n
+ * @start
+ * @next FuryAddress
+ * @next Failure
+ */
+message FuryGetAddress {
+    repeated uint32 address_n = 1;          // BIP-32 path to derive the key from master node
+    optional bool show_display = 2;         // Optionally show on display before sending the result
+    optional uint32 network_type = 3;       // Main-net / testnet / stagenet
+    optional uint32 account = 4;            // Major subaddr index
+    optional uint32 minor = 5;              // Minor subaddr index
+}
+
+/**
+ * Response: Contains Fury watch-only credentials derived from device private seed
+ * @end
+ */
+message FuryAddress {
+    optional bytes address = 1;
+}
+
+/**
+ * Request: Ask device for watch only credentials
+ * @start
+ * @next FuryWatchKey
+ * @next Failure
+ */
+message FuryGetWatchKey {
+    repeated uint32 address_n = 1;          // BIP-32 path to derive the key from master node
+    optional uint32 network_type = 2;       // Main-net / testnet / stagenet
+}
+
+/**
+ * Response: Contains Fury watch-only credentials derived from device private seed
+ * @end
+ */
+message FuryWatchKey {
+    optional bytes watch_key = 1;
+    optional bytes address = 2;
+}
+
+/**
+ * Request: Sub request of FuryTransactionSign. Initializes transaction signing.
+ * @start
+ * @next FuryTransactionInitAck
+ */
+message FuryTransactionInitRequest {
+    optional uint32 version = 1;
+    repeated uint32 address_n = 2;
+    optional uint32 network_type = 3;       // Main-net / testnet / stagenet
+    optional FuryTransactionData tsx_data = 4;
+    /**
+     * Structure representing Fury initial transaction information
+     */
+    message FuryTransactionData {
+        optional uint32 version = 1;
+        optional bytes payment_id = 2;
+        optional uint64 unlock_time = 3;
+        repeated FuryTransactionDestinationEntry outputs = 4;
+        optional FuryTransactionDestinationEntry change_dts = 5;
+        optional uint32 num_inputs = 6;
+        optional uint32 mixin = 7;
+        optional uint64 fee = 8;
+        optional uint32 account = 9;
+        repeated uint32 minor_indices = 10;
+        optional FuryTransactionRsigData rsig_data = 11;
+        repeated uint32 integrated_indices = 12;
+    }
+}
+
+/**
+ * Response: Response to transaction signing initialization.
+ * @next FuryTransactionSetInputRequest
+ */
+message FuryTransactionInitAck {
+    repeated bytes hmacs = 1;
+    optional FuryTransactionRsigData rsig_data = 2;
+}
+
+/**
+ * Request: Sub request of FuryTransactionSign. Sends one UTXO to device
+ * @next FuryTransactionSetInputAck
+ */
+message FuryTransactionSetInputRequest {
+    optional FuryTransactionSourceEntry src_entr = 1;
+}
+
+/**
+ * Response: Response to setting UTXO for signature. Contains sealed values needed for further protocol steps.
+ * @next FuryTransactionSetInputAck
+ * @next FuryTransactionInputsPermutationRequest
+ */
+message FuryTransactionSetInputAck {
+    optional bytes vini = 1;      // xmrtypes.TxinToKey
+    optional bytes vini_hmac = 2;
+    optional bytes pseudo_out = 3;
+    optional bytes pseudo_out_hmac = 4;
+    optional bytes pseudo_out_alpha = 5;
+    optional bytes spend_key = 6;
+}
+
+/**
+ * Request: Sub request of FuryTransactionSign. Permutation on key images.
+ * @next FuryTransactionInputsPermutationAck
+ */
+message FuryTransactionInputsPermutationRequest {
+    repeated uint32 perm = 1;
+}
+
+/**
+ * Response: Response to setting permutation on key images
+ * @next FuryTransactionInputViniRequest
+ */
+message FuryTransactionInputsPermutationAck {
+}
+
+/**
+ * Request: Sub request of FuryTransactionSign. Sends one UTXO to device together with sealed values.
+ * @next FuryTransactionInputViniAck
+ */
+message FuryTransactionInputViniRequest {
+    optional FuryTransactionSourceEntry src_entr = 1; 
+    optional bytes vini = 2;      // xmrtypes.TxinToKey
+    optional bytes vini_hmac = 3;
+    optional bytes pseudo_out = 4;
+    optional bytes pseudo_out_hmac = 5;
+}
+
+/**
+ * Response: Response to setting UTXO to the device
+ * @next FuryTransactionInputViniRequest
+ * @next FuryTransactionAllInputsSetRequest
+ */
+message FuryTransactionInputViniAck {
+}
+
+/**
+ * Request: Sub request of FuryTransactionSign. Sent after all inputs have been sent. Useful for rangeisg offloading.
+ * @next FuryTransactionAllInputsSetAck
+ */
+message FuryTransactionAllInputsSetRequest {
+}
+
+/**
+ * Response: Response to after all inputs have been set.
+ * @next FuryTransactionSetOutputRequest
+ */
+message FuryTransactionAllInputsSetAck {
+    optional FuryTransactionRsigData rsig_data = 1;
+}
+
+/**
+ * Request: Sub request of FuryTransactionSign. Sends one transaction destination to device (HMACed)
+ * @next FuryTransactionSetOutputAck
+ */
+message FuryTransactionSetOutputRequest {
+    optional FuryTransactionDestinationEntry dst_entr = 1;
+    optional bytes dst_entr_hmac = 2;
+    optional FuryTransactionRsigData rsig_data = 3;
+}
+
+/**
+ * Response: Response to setting transaction destination. Contains sealed values needed for further protocol steps.
+ * @next FuryTransactionSetOutputRequest
+ * @next FuryTransactionAllOutSetRequest
+ */
+message FuryTransactionSetOutputAck {
+    optional bytes tx_out = 1;  // xmrtypes.TxOut
+    optional bytes vouti_hmac = 2;
+    optional FuryTransactionRsigData rsig_data = 3;
+    optional bytes out_pk = 4;
+    optional bytes ecdh_info = 5;
+}
+
+/**
+ * Request: Sub request of FuryTransactionSign. Sent after all outputs are sent.
+ * @next FuryTransactionAllOutSetAck
+ */
+message FuryTransactionAllOutSetRequest {
+    optional FuryTransactionRsigData rsig_data = 1;
+}
+
+/**
+ * Response: After all outputs are sent the initial RCT signature fields are sent.
+ * @next FuryTransactionSignInputRequest
+ */
+message FuryTransactionAllOutSetAck {
+    optional bytes extra = 1;
+    optional bytes tx_prefix_hash = 2;
+    optional FuryRingCtSig rv = 4;  // xmrtypes.RctSig
+    optional bytes full_message_hash = 5;
+
+    /*
+     * Structure represents initial fields of the Fury RCT signature
+     */
+    message FuryRingCtSig {
+        optional uint64 txn_fee = 1;
+        optional bytes message = 2;
+        optional uint32 rv_type = 3;
+    }
+}
+
+/**
+ * Request: Sub request of FuryTransactionSign. Sends UTXO for the signing.
+ * @next FuryTransactionSignInputAck
+ */
+message FuryTransactionSignInputRequest {
+    optional FuryTransactionSourceEntry src_entr = 1;
+    optional bytes vini = 2;     // xmrtypes.TxinToKey
+    optional bytes vini_hmac = 3;
+    optional bytes pseudo_out = 4;
+    optional bytes pseudo_out_hmac = 5;
+    optional bytes pseudo_out_alpha = 6;
+    optional bytes spend_key = 7;
+}
+
+/**
+ * Response: Contains full MG signature of the UTXO + multisig data if applicable.
+ * @next FuryTransactionSignInputRequest
+ * @next FuryTransactionFinalRequest
+ */
+message FuryTransactionSignInputAck {
+    optional bytes signature = 1;
+}
+
+/**
+ * Request: Sub request of FuryTransactionSign. Final message of the procol after all UTXOs are signed
+ * @next FuryTransactionFinalAck
+ */
+message FuryTransactionFinalRequest {
+}
+
+/**
+ * Response: Contains transaction metadata and encryption keys needed for further transaction operations (e.g. multisig, send proof).
+ * @end
+ */
+message FuryTransactionFinalAck {
+    optional bytes cout_key = 1;
+    optional bytes salt = 2;
+    optional bytes rand_mult = 3;
+    optional bytes tx_enc_keys = 4;
+}
+
+/**
+ * Request: Sub request of FuryKeyImageSync. Initializing key image sync.
+ * @start
+ * @next FuryKeyImageExportInitAck
+ */
+message FuryKeyImageExportInitRequest {
+    optional uint64 num = 1;
+    optional bytes hash = 2;
+    repeated uint32 address_n = 3;               // BIP-32 path to derive the key from master node
+    optional uint32 network_type = 4;            // Main-net / testnet / stagenet
+    repeated FurySubAddressIndicesList subs = 5;
+    /**
+     * Structure representing Fury list of sub-addresses
+     */
+    message FurySubAddressIndicesList {
+        optional uint32 account = 1;
+        repeated uint32 minor_indices = 2;
+    }
+}
+
+/**
+ * Response: Response to key image sync initialization.
+ * @next FuryKeyImageSyncStepRequest
+ */
+message FuryKeyImageExportInitAck {
+}
+
+/**
+ * Request: Sub request of FuryKeyImageSync. Contains batch of the UTXO to export key image for.
+ * @next FuryKeyImageSyncStepAck
+ */
+message FuryKeyImageSyncStepRequest {
+    repeated FuryTransferDetails tdis = 1;
+    /**
+     * Structure representing Fury UTXO for key image sync
+     */
+    message FuryTransferDetails {
+        optional bytes out_key = 1;
+        optional bytes tx_pub_key = 2;
+        repeated bytes additional_tx_pub_keys = 3;
+        optional uint64 internal_output_index = 4;
+    }
+}
+
+/**
+ * Response: Response to key image sync step. Contains encrypted exported key image.
+ * @next FuryKeyImageSyncStepRequest
+ * @next FuryKeyImageSyncFinalRequest
+ */
+message FuryKeyImageSyncStepAck {
+    repeated FuryExportedKeyImage kis = 1;
+    /**
+     * Structure representing Fury encrypted exported key image
+     */
+    message FuryExportedKeyImage {
+        optional bytes iv = 1;
+        optional bytes blob = 3;
+    }
+}
+
+/**
+ * Request: Sub request of FuryKeyImageSync. Final message of the sync protocol.
+ * @next FuryKeyImageSyncFinalAck
+ */
+message FuryKeyImageSyncFinalRequest {
+}
+
+/**
+ * Response: Response to key image sync step. Contains encryption keys for exported key images.
+ * @end
+ */
+message FuryKeyImageSyncFinalAck {
+    optional bytes enc_key = 1;
+}
+
+/**
+ * Request: Universal Fury protocol implementation diagnosis request.
+ * @start
+ * @next DebugFuryDiagAck
+ */
+message DebugFuryDiagRequest {
+    optional uint64 ins = 1;
+    optional uint64 p1 = 2;
+    optional uint64 p2 = 3;
+    repeated uint64 pd = 4;
+    optional bytes data1 = 5;
+    optional bytes data2 = 6;
+}
+
+/**
+ * Response: Response to Fury diagnosis protocol.
+ * @end
+ */
+message DebugFuryDiagAck {
+    optional uint64 ins = 1;
+    optional uint64 p1 = 2;
+    optional uint64 p2 = 3;
+    repeated uint64 pd = 4;
+    optional bytes data1 = 5;
+    optional bytes data2 = 6;
+}

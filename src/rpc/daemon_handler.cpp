@@ -34,6 +34,7 @@
 #include "cryptonote_basic/cryptonote_format_utils.h"
 #include "cryptonote_basic/blobdatatype.h"
 #include "ringct/rctSigs.h"
+#include "version.h"
 
 namespace cryptonote
 {
@@ -319,6 +320,26 @@ namespace rpc
         if (!res.error_details.empty()) res.error_details += " and ";
         res.error_details = "tx is not ringct";
       }
+      if (tvc.m_invalid_version)
+      {
+        if (!res.error_details.empty()) res.error_details += " and ";
+        res.error_details = "tx is not version 2 or later";
+      }
+      if (tvc.m_invalid_type)
+      {
+        if (!res.error_details.empty()) res.error_details += " and ";
+        res.error_details = "tx has an invalid type";
+      }
+      if (tvc.m_key_image_locked_by_snode)
+      {
+        if (!res.error_details.empty()) res.error_details += " and ";
+        res.error_details = "tx uses outputs that are locked by the service node network";
+      }
+      if (tvc.m_key_image_blacklisted)
+      {
+        if (!res.error_details.empty()) res.error_details += " and ";
+        res.error_details = "tx uses a key image that has been temporarily blacklisted by the service node network";
+      }
       if (res.error_details.empty())
       {
         res.error_details = "an unknown issue was found with the transaction";
@@ -437,6 +458,7 @@ namespace rpc
     res.info.block_size_limit = res.info.block_weight_limit = m_core.get_blockchain_storage().get_current_cumulative_block_weight_limit();
     res.info.block_size_median = res.info.block_weight_median = m_core.get_blockchain_storage().get_current_cumulative_block_weight_median();
     res.info.start_time = (uint64_t)m_core.get_start_time();
+    res.info.version = FURY_VERSION;
 
     res.status = Message::STATUS_OK;
     res.error_details = "";
@@ -724,10 +746,51 @@ namespace rpc
     res.status = Message::STATUS_OK;
   }
 
-  void DaemonHandler::handle(const GetPerKBFeeEstimate::Request& req, GetPerKBFeeEstimate::Response& res)
+  void DaemonHandler::handle(const GetFeeEstimate::Request& req, GetFeeEstimate::Response& res)
   {
-    res.estimated_fee_per_kb = m_core.get_blockchain_storage().get_dynamic_base_fee_estimate(req.num_grace_blocks);
+    res.hard_fork_version = m_core.get_blockchain_storage().get_current_hard_fork_version();
+    res.estimated_base_fee = m_core.get_blockchain_storage().get_dynamic_base_fee_estimate(req.num_grace_blocks);
+
+    if (res.hard_fork_version < HF_VERSION_PER_BYTE_FEE)
+    {
+       res.size_scale = 1024; // per KiB fee
+       res.fee_mask = 1;
+    }
+    else
+    {
+      res.size_scale = 1; // per byte fee
+      res.fee_mask = Blockchain::get_fee_quantization_mask();
+    }
     res.status = Message::STATUS_OK;
+  }
+
+  void DaemonHandler::handle(const GetOutputDistribution::Request& req, GetOutputDistribution::Response& res)
+  {
+    try
+    {
+      res.distributions.reserve(req.amounts.size());
+
+      const uint64_t req_to_height = req.to_height ? req.to_height : (m_core.get_current_blockchain_height() - 1);
+      for (std::uint64_t amount : req.amounts)
+      {
+        auto data = rpc::RpcHandler::get_output_distribution([this](uint64_t amount, uint64_t from, uint64_t to, uint64_t &start_height, std::vector<uint64_t> &distribution, uint64_t &base) { return m_core.get_output_distribution(amount, from, to, start_height, distribution, base); }, amount, req.from_height, req_to_height, req.cumulative);
+        if (!data)
+        {
+          res.distributions.clear();
+          res.status = Message::STATUS_FAILED;
+          res.error_details = "Failed to get output distribution";
+          return;
+        }
+        res.distributions.push_back(output_distribution{std::move(*data), amount, req.cumulative});
+      }
+      res.status = Message::STATUS_OK;
+    }
+    catch (const std::exception& e)
+    {
+      res.distributions.clear();
+      res.status = Message::STATUS_FAILED;
+      res.error_details = e.what();
+    }
   }
 
   bool DaemonHandler::getBlockHeaderByHash(const crypto::hash& hash_in, cryptonote::rpc::BlockHeaderResponse& header)
@@ -804,7 +867,8 @@ namespace rpc
       REQ_RESP_TYPES_MACRO(request_type, GetOutputHistogram, req_json, resp_message, handle);
       REQ_RESP_TYPES_MACRO(request_type, GetOutputKeys, req_json, resp_message, handle);
       REQ_RESP_TYPES_MACRO(request_type, GetRPCVersion, req_json, resp_message, handle);
-      REQ_RESP_TYPES_MACRO(request_type, GetPerKBFeeEstimate, req_json, resp_message, handle);
+      REQ_RESP_TYPES_MACRO(request_type, GetFeeEstimate, req_json, resp_message, handle);
+      REQ_RESP_TYPES_MACRO(request_type, GetOutputDistribution, req_json, resp_message, handle);
 
       // if none of the request types matches
       if (resp_message == NULL)

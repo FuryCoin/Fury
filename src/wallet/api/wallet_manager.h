@@ -35,7 +35,7 @@
 
 namespace Fury {
 
-class WalletManagerImpl : public WalletManager
+class WalletManagerImpl : public WalletManagerBase
 {
 public:
     Wallet * createWallet(const std::string &path, const std::string &password,

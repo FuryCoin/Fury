@@ -55,21 +55,19 @@ namespace cryptonote
   /*                                                                      */
   /************************************************************************/
 
-  //! pair of <transaction fee, transaction hash> for organization
-  typedef std::pair<std::pair<double, std::time_t>, crypto::hash> tx_by_fee_and_receive_time_entry;
+  //! tuple of <deregister, transaction fee, receive time> for organization
+  typedef std::pair<std::tuple<bool, double, std::time_t>, crypto::hash> tx_by_fee_and_receive_time_entry;
 
   class txCompare
   {
   public:
     bool operator()(const tx_by_fee_and_receive_time_entry& a, const tx_by_fee_and_receive_time_entry& b)
     {
-      // sort by greatest first, not least
-      if (a.first.first > b.first.first) return true;
-      else if (a.first.first < b.first.first) return false;
-      else if (a.first.second < b.first.second) return true;
-      else if (a.first.second > b.first.second) return false;
-      else if (a.second != b.second) return true;
-      else return false;
+      std::string ahash(a.second.data, sizeof(a.second.data));
+      std::string bhash(b.second.data, sizeof(b.second.data));
+      //      prioritize      deregister             fee                   arrival time      hash
+      return std::make_tuple(!std::get<0>(a.first), -std::get<1>(a.first), std::get<2>(a.first), ahash)
+           < std::make_tuple(!std::get<0>(b.first), -std::get<1>(b.first), std::get<2>(b.first), bhash);
     }
   };
 
@@ -107,7 +105,7 @@ namespace cryptonote
      * @param id the transaction's hash
      * @param tx_weight the transaction's weight
      */
-    bool add_tx(transaction &tx, const crypto::hash &id, size_t tx_weight, tx_verification_context& tvc, bool kept_by_block, bool relayed, bool do_not_relay, uint8_t version);
+    bool add_tx(transaction &tx, const crypto::hash &id, const cryptonote::blobdata &blob, size_t tx_weight, tx_verification_context& tvc, bool kept_by_block, bool relayed, bool do_not_relay, uint8_t version);
 
     /**
      * @brief add a transaction to the transaction pool
@@ -228,7 +226,7 @@ namespace cryptonote
      *
      * @return true
      */
-    bool fill_block_template(block &bl, size_t median_weight, uint64_t already_generated_coins, size_t &total_weight, uint64_t &fee, uint64_t &expected_reward, uint8_t version);
+    bool fill_block_template(block &bl, size_t median_weight, uint64_t already_generated_coins, size_t &total_weight, uint64_t &fee, uint64_t &expected_reward, uint8_t version, uint64_t height);
 
     /**
      * @brief get a list of all transactions in the pool
@@ -434,7 +432,7 @@ namespace cryptonote
      *
      * @return true on success, false on error
      */
-    bool insert_key_images(const transaction &tx, bool kept_by_block);
+    bool insert_key_images(const transaction_prefix &tx, const crypto::hash &txid, bool kept_by_block);
 
     /**
      * @brief remove old transactions from the pool
@@ -455,6 +453,14 @@ namespace cryptonote
      * @return true if the spent key image is present, otherwise false
      */
     bool have_tx_keyimg_as_spent(const crypto::key_image& key_im) const;
+
+    /**
+     * @brief check if a tx that does not have a key-image component has a duplicate in the pool
+
+     * @return true if it already exists
+     *
+     */
+    bool have_duplicated_non_standard_tx(transaction const &tx) const;
 
     /**
      * @brief check if any spent key image in a transaction is in the pool
@@ -478,10 +484,11 @@ namespace cryptonote
      * a transaction from the pool.
      *
      * @param tx the transaction
+     * @param txid the transaction's hash
      *
      * @return false if any key images to be removed cannot be found, otherwise true
      */
-    bool remove_transaction_keyimages(const transaction& tx);
+    bool remove_transaction_keyimages(const transaction_prefix& tx, const crypto::hash &txid);
 
     /**
      * @brief check if any of a transaction's spent key images are present in a given set
@@ -491,7 +498,7 @@ namespace cryptonote
      *
      * @return true if any key images present in the set, otherwise false
      */
-    static bool have_key_images(const std::unordered_set<crypto::key_image>& kic, const transaction& tx);
+    static bool have_key_images(const std::unordered_set<crypto::key_image>& kic, const transaction_prefix& tx);
 
     /**
      * @brief append the key images from a transaction to the given set
@@ -501,7 +508,7 @@ namespace cryptonote
      *
      * @return false if any append fails, otherwise true
      */
-    static bool append_key_images(std::unordered_set<crypto::key_image>& kic, const transaction& tx);
+    static bool append_key_images(std::unordered_set<crypto::key_image>& kic, const transaction_prefix& tx);
 
     /**
      * @brief check if a transaction is a valid candidate for inclusion in a block
@@ -513,7 +520,7 @@ namespace cryptonote
      *
      * @return true if the transaction is good to go, otherwise false
      */
-    bool is_transaction_ready_to_go(txpool_tx_meta_t& txd, const crypto::hash &txid, const cryptonote::blobdata &txblob, transaction &tx) const;
+    bool is_transaction_ready_to_go(txpool_tx_meta_t& txd, const crypto::hash &txid, const cryptonote::blobdata &txblob, transaction&tx) const;
 
     /**
      * @brief mark all transactions double spending the one passed
@@ -583,6 +590,8 @@ private:
     size_t m_txpool_weight;
 
     mutable std::unordered_map<crypto::hash, std::tuple<bool, tx_verification_context, uint64_t, crypto::hash>> m_input_cache;
+
+    std::unordered_map<crypto::hash, transaction> m_parsed_tx_cache;
   };
 }
 

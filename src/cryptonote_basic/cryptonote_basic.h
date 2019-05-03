@@ -47,7 +47,6 @@
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
 #include "misc_language.h"
-#include "tx_extra.h"
 #include "ringct/rctTypes.h"
 #include "device/device.hpp"
 
@@ -157,8 +156,21 @@ namespace cryptonote
   {
 
   public:
+    enum version
+    {
+      version_0 = 0,
+      version_1,
+      version_2,
+      version_3_per_output_unlock_times,
+      version_4_tx_types,
+    };
+    static version get_min_version_for_hf(int hf_version, cryptonote::network_type nettype = MAINNET);
+    static version get_max_version_for_hf(int hf_version, cryptonote::network_type nettype = MAINNET);
+
     // tx information
     size_t   version;
+
+    // not used after version 2, but remains for compatibility
     uint64_t unlock_time;  //number of block (or time), used as a limitation like: spend this tx not early then block/time
 
     std::vector<txin_v> vin;
@@ -166,17 +178,74 @@ namespace cryptonote
     //extra
     std::vector<uint8_t> extra;
 
+    std::vector<uint64_t> output_unlock_times;
+
+    enum type_t
+    {
+      type_standard,
+      type_deregister,
+      type_key_image_unlock,
+      type_count,
+    };
+
+    static char const *type_to_string(type_t type);
+    static char const *type_to_string(uint16_t type_as_uint);
+
+    union
+    {
+      bool is_deregister; // not used after version >= version_4_tx_types
+      uint16_t type;
+    };
+
     BEGIN_SERIALIZE()
       VARINT_FIELD(version)
-      if(version == 0 || CURRENT_TRANSACTION_VERSION < version) return false;
+      if (version > 2)
+      {
+        FIELD(output_unlock_times)
+        if (version == version_3_per_output_unlock_times)
+          FIELD(is_deregister)
+      }
+      if(version == 0 || version > version_4_tx_types) return false;
       VARINT_FIELD(unlock_time)
       FIELD(vin)
       FIELD(vout)
+      if (version >= 3 && vout.size() != output_unlock_times.size()) return false;
       FIELD(extra)
+      if (version >= version_4_tx_types)
+      {
+        VARINT_FIELD(type) // NOTE(fury): Overwrites is_deregister
+        if (static_cast<uint16_t>(type) >= type_count) return false;
+      }
     END_SERIALIZE()
 
   public:
-    transaction_prefix(){}
+    transaction_prefix(){ set_null(); }
+    void set_null()
+    {
+      version = 1;
+      unlock_time = 0;
+      vin.clear();
+      vout.clear();
+      extra.clear();
+      output_unlock_times.clear();
+      type = type_standard;
+    }
+    type_t get_type   ()                  const;
+    bool   set_type   (type_t new_type);
+
+    uint64_t get_unlock_time(size_t out_index) const
+    {
+      if (version >= version_3_per_output_unlock_times)
+      {
+        if (out_index >= output_unlock_times.size())
+        {
+          LOG_ERROR("Tried to get unlock time of a v3 transaction with missing output unlock time");
+          return unlock_time;
+        }
+        return output_unlock_times[out_index];
+      }
+      return unlock_time;
+    }
   };
 
   class transaction: public transaction_prefix
@@ -194,9 +263,11 @@ namespace cryptonote
     mutable crypto::hash hash;
     mutable size_t blob_size;
 
+    bool pruned;
+
     transaction();
-    transaction(const transaction &t): transaction_prefix(t), hash_valid(false), blob_size_valid(false), signatures(t.signatures), rct_signatures(t.rct_signatures) { if (t.is_hash_valid()) { hash = t.hash; set_hash_valid(true); } if (t.is_blob_size_valid()) { blob_size = t.blob_size; set_blob_size_valid(true); } }
-    transaction &operator=(const transaction &t) { transaction_prefix::operator=(t); set_hash_valid(false); set_blob_size_valid(false); signatures = t.signatures; rct_signatures = t.rct_signatures; if (t.is_hash_valid()) { hash = t.hash; set_hash_valid(true); } if (t.is_blob_size_valid()) { blob_size = t.blob_size; set_blob_size_valid(true); } return *this; }
+    transaction(const transaction &t): transaction_prefix(t), hash_valid(false), blob_size_valid(false), signatures(t.signatures), rct_signatures(t.rct_signatures), pruned(t.pruned) { if (t.is_hash_valid()) { hash = t.hash; set_hash_valid(true); } if (t.is_blob_size_valid()) { blob_size = t.blob_size; set_blob_size_valid(true); } }
+    transaction &operator=(const transaction &t) { transaction_prefix::operator=(t); set_hash_valid(false); set_blob_size_valid(false); signatures = t.signatures; rct_signatures = t.rct_signatures; if (t.is_hash_valid()) { hash = t.hash; set_hash_valid(true); } if (t.is_blob_size_valid()) { blob_size = t.blob_size; set_blob_size_valid(true); } pruned = t.pruned; return *this; }
     virtual ~transaction();
     void set_null();
     void invalidate_hashes();
@@ -204,6 +275,8 @@ namespace cryptonote
     void set_hash_valid(bool v) const { hash_valid.store(v,std::memory_order_release); }
     bool is_blob_size_valid() const { return blob_size_valid.load(std::memory_order_acquire); }
     void set_blob_size_valid(bool v) const { blob_size_valid.store(v,std::memory_order_release); }
+    void set_hash(const crypto::hash &h) { hash = h; set_hash_valid(true); }
+    void set_blob_size(size_t sz) { blob_size = sz; set_blob_size_valid(true); }
 
     BEGIN_SERIALIZE_OBJECT()
       if (!typename Archive<W>::is_saving())
@@ -223,7 +296,7 @@ namespace cryptonote
         if (!signatures_not_expected && vin.size() != signatures.size())
           return false;
 
-        for (size_t i = 0; i < vin.size(); ++i)
+        if (!pruned) for (size_t i = 0; i < vin.size(); ++i)
         {
           size_t signature_size = get_signature_size(vin[i]);
           if (signatures_not_expected)
@@ -254,7 +327,7 @@ namespace cryptonote
           bool r = rct_signatures.serialize_rctsig_base(ar, vin.size(), vout.size());
           if (!r || !ar.stream().good()) return false;
           ar.end_object();
-          if (rct_signatures.type != rct::RCTTypeNull)
+          if (!pruned && rct_signatures.type != rct::RCTTypeNull)
           {
             ar.tag("rctsig_prunable");
             ar.begin_object();
@@ -265,6 +338,8 @@ namespace cryptonote
           }
         }
       }
+      if (!typename Archive<W>::is_saving())
+        pruned = false;
     END_SERIALIZE()
 
     template<bool W, template <bool> class Archive>
@@ -286,6 +361,8 @@ namespace cryptonote
           ar.end_object();
         }
       }
+      if (!typename Archive<W>::is_saving())
+        pruned = true;
       return true;
     }
 
@@ -303,21 +380,18 @@ namespace cryptonote
   inline
   transaction::~transaction()
   {
-    //set_null();
   }
 
   inline
   void transaction::set_null()
   {
-    version = 1;
-    unlock_time = 0;
-    vin.clear();
-    vout.clear();
-    extra.clear();
+    transaction_prefix::set_null();
     signatures.clear();
+    rct_signatures = {};
     rct_signatures.type = rct::RCTTypeNull;
     set_hash_valid(false);
     set_blob_size_valid(false);
+    pruned = false;
   }
 
   inline
@@ -437,7 +511,93 @@ namespace cryptonote
     }
   };
   //---------------------------------------------------------------
+  inline static cryptonote::network_type validate_nettype(cryptonote::network_type nettype)
+  {
+    cryptonote::network_type result = nettype;
+    assert(result != UNDEFINED);
+    if (result == UNDEFINED)
+    {
+      LOG_ERROR("Min/Max version query network type unexpectedly set to UNDEFINED, defaulting to MAINNET");
+      result = MAINNET;
+    }
+    return result;
+  }
 
+  inline enum transaction_prefix::version transaction_prefix::get_max_version_for_hf(int hf_version, cryptonote::network_type nettype)
+  {
+    nettype = validate_nettype(nettype);
+    if (hf_version <= 11)
+      return transaction::version_2;    
+
+    return transaction::version_4_tx_types;
+  }
+
+  inline enum transaction_prefix::version transaction_prefix::get_min_version_for_hf(int hf_version, cryptonote::network_type nettype)
+  {
+    nettype = validate_nettype(nettype);    
+    if (hf_version <= 11)
+      return transaction::version_2; 
+
+    return transaction::version_4_tx_types;
+  }
+
+  inline transaction_prefix::type_t transaction_prefix::get_type() const
+  {
+    if (version <= version_2)
+      return type_standard;
+
+    if (version == version_3_per_output_unlock_times)
+    {
+      if (is_deregister) return type_deregister;
+      return type_standard;
+    }
+
+    // NOTE(fury): Type is range checked on deserialisation, so hitting this is a developer error
+    assert(static_cast<uint16_t>(type) < static_cast<uint16_t>(type_count));
+    return static_cast<transaction::type_t>(type);
+  }
+
+  inline bool transaction_prefix::set_type(transaction_prefix::type_t new_type)
+  {
+    bool result = false;
+    if (version <= version_2)
+      result = (new_type == type_standard);
+
+    if (version == version_3_per_output_unlock_times)
+    {
+      if (new_type == type_standard || new_type == type_deregister)
+        result = true;
+    }
+    else
+    {
+      result = true;
+    }
+
+    if (result)
+    {
+      assert(static_cast<uint16_t>(new_type) <= static_cast<uint16_t>(type_count)); // NOTE(fury): Developer error
+      type = static_cast<uint16_t>(new_type);
+    }
+
+    return result;
+  }
+
+  inline char const *transaction_prefix::type_to_string(uint16_t type_as_uint)
+  {
+    return type_to_string(static_cast<type_t>(type_as_uint));
+  }
+
+  inline char const *transaction_prefix::type_to_string(type_t type)
+  {
+    switch(type)
+    {
+      case type_standard:         return "standard";
+      case type_deregister:       return "deregister";
+      case type_key_image_unlock: return "key_image_unlock";
+      case type_count:            return "xx_count";
+      default: assert(false);     return "xx_unhandled_type";
+    }
+  }
 }
 
 namespace std {

@@ -109,11 +109,14 @@ public:
     uint64_t unlockedBalance(uint32_t accountIndex = 0) const override;
     uint64_t blockChainHeight() const override;
     uint64_t approximateBlockChainHeight() const override;
+    uint64_t estimateBlockChainHeight() const override;
     uint64_t daemonBlockChainHeight() const override;
     uint64_t daemonBlockChainTargetHeight() const override;
     bool synchronized() const override;
     bool refresh() override;
     void refreshAsync() override;
+    bool rescanBlockchain() override;
+    void rescanBlockchainAsync() override;    
     void setAutoRefreshInterval(int millis) override;
     int autoRefreshInterval() const override;
     void setRefreshFromBlockHeight(uint64_t refresh_from_block_height) override;
@@ -133,6 +136,8 @@ public:
     void addSubaddress(uint32_t accountIndex, const std::string& label) override;
     std::string getSubaddressLabel(uint32_t accountIndex, uint32_t addressIndex) const override;
     void setSubaddressLabel(uint32_t accountIndex, uint32_t addressIndex, const std::string &label) override;
+
+    PendingTransaction* stakePending(const std::string& service_node_key, const std::string& address, const std::string& amount, std::string& error_msg) override;
 
     MultisigState multisig() const override;
     std::string getMultisigInfo() const override;
@@ -232,6 +237,7 @@ private:
     std::atomic<bool> m_refreshEnabled;
     std::atomic<bool> m_refreshThreadDone;
     std::atomic<int>  m_refreshIntervalMillis;
+    std::atomic<bool> m_refreshShouldRescan;
     // synchronizing  refresh loop;
     boost::mutex        m_refreshMutex;
 

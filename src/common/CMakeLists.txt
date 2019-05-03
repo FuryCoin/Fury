@@ -35,18 +35,27 @@ set(common_sources
   download.cpp
   error.cpp
   expect.cpp
+  fury.cpp
   util.cpp
   i18n.cpp
+  rules.cpp
   notify.cpp
   password.cpp
   perf_timer.cpp
+  pruning.cpp
+  scoped_message_writer.cpp
   spawn.cpp
   threadpool.cpp
   updates.cpp
-  aligned.c)
+  aligned.c
+  combinator.cpp)
 
 if (STACK_TRACE)
   list(APPEND common_sources stack_trace.cpp)
+endif()
+
+if (BACKCOMPAT)
+  list(APPEND common_sources compat/glibc_compat.cpp)
 endif()
 
 set(common_headers)
@@ -61,10 +70,12 @@ set(common_private_headers
   download.h
   error.h
   expect.h
+  fury.h
   http_connection.h
-  int-util.h
+  fury_integration_test_hooks.h
   notify.h
   pod-class.h
+  pruning.h
   rpc_client.h
   scoped_message_writer.h
   unordered_containers_boost_serialization.h
@@ -73,11 +84,13 @@ set(common_private_headers
   i18n.h
   password.h
   perf_timer.h
+  rules.h
   spawn.h
   stack_trace.h
   threadpool.h
   updates.h
-  aligned.h)
+  aligned.h
+  combinator.h)
 
 fury_private_headers(common
   ${common_private_headers})
@@ -99,6 +112,7 @@ target_link_libraries(common
     ${Boost_CHRONO_LIBRARY}
   PRIVATE
     ${OPENSSL_LIBRARIES}
+    ${EPEE_READLINE}
     ${EXTRA_LIBRARIES})
 
 #fury_install_headers(common

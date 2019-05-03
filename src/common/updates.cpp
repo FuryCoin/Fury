@@ -45,12 +45,7 @@ namespace tools
     MDEBUG("Checking updates for " << buildtag << " " << software);
 
     // All four FuryPulse domains have DNSSEC on and valid
-    static const std::vector<std::string> dns_urls = {
-        "updates.furypulse.org",
-        "updates.furypulse.net",
-        "updates.furypulse.co",
-        "updates.furypulse.se"
-    };
+    static const std::vector<std::string> dns_urls = {};
 
     if (!tools::dns_utils::load_txt_records_from_dns(records, dns_urls))
       return false;
