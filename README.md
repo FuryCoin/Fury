@@ -88,7 +88,7 @@ Debian / Ubuntu one liner for all dependencies
 
 ### Cloning the repository
 
-`$ git clone https://github.com/FuryCoin/Fury
+     $ git clone https://github.com/FuryCoin/Fury 
 
 ### Build instructions
 
