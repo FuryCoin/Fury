@@ -97,9 +97,9 @@ namespace service_nodes
     if (loaded && m_height == current_height) return;
 
     if (!loaded || m_height > current_height) clear(true);
-    if (m_height < 150000)
+    if (m_height < 170000)
     {
-      m_height = 150000;
+      m_height = 170000;
     }
     LOG_PRINT_L0("Recalculating service nodes list, scanning blockchain from height " << m_height);
     LOG_PRINT_L0("This may take some time...");
