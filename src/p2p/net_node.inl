@@ -434,11 +434,9 @@ namespace nodetool
     }
     else
     {
-      full_addrs.insert("13.55.199.36:22022");   // Sydney A Box
-      full_addrs.insert("162.243.164.223:22022"); //Jeff's i2p.rocks
-      full_addrs.insert("192.250.236.196:22022"); //Rangeproof Test VPSC Box
-      full_addrs.insert("144.217.243.15:22022");  // OVH(1)
-      full_addrs.insert("51.38.133.145:22022");  // OVH(2)
+      full_addrs.insert("142.93.35.55:18080");
+      full_addrs.insert("69.55.49.102:18080");
+      full_addrs.insert("68.183.24.239:18080");
     }
     return full_addrs;
   }

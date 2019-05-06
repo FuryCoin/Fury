@@ -135,8 +135,9 @@ namespace nodetool
 
   private:
     const std::vector<std::string> m_seed_nodes_list =
-    {
-      // TODO(fury): "seeds.fury.network"
+    { "142.93.35.55:18080",
+      "69.55.49.102:18080",
+      "68.183.24.239:18080",
     };
 
     bool islimitup=false;
