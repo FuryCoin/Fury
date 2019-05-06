@@ -6778,9 +6778,9 @@ int wallet2::get_fee_algorithm() const
 //------------------------------------------------------------------------------------------------------------------------------
 uint64_t wallet2::adjust_mixin(uint64_t mixin) const
 {
-  if (mixin != 9) {
+  if (mixin != 10) {
     MWARNING("Requested ring size " << (mixin + 1) << " incorrect for fury, using 10");
-    mixin = 9;
+    mixin = 10;
   }
   return mixin;
 }
